@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishi Rakshak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* A little extra polish for the UI */
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* A light green fallback */
+            background-image: linear-gradient(to top, #f0fdf4 0%, #e6f7f0 100%);
+        }
+        /* Responsive container for mobile and desktop */
+        .app-container { 
+            width: 100%;
+            max-width: 420px; /* Mobile first max-width */
+            min-height: 800px; 
+            border: 4px solid #4ade80; /* Added green outline */
+        }
+        @media (min-width: 768px) { /* On desktop, allow it to be a bit wider */
+            .app-container {
+                max-width: 1000px;
+            }
+            .main-content-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+        }
+        .nav-item.active { color: #16a34a; border-bottom: 2px solid #16a34a; }
+        .page { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pump-mode-btn.active { background-color: #16a34a; color: white; }
+
+        /* Animation for product cards */
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .product-card {
+            /* Apply the animation */
+            animation: popIn 0.5s ease-out forwards;
+            opacity: 0; /* Start hidden */
+        }
+        /* Stagger the animation for each card */
+        .product-card:nth-child(1) { animation-delay: 0.1s; }
+        .product-card:nth-child(2) { animation-delay: 0.2s; }
+        .product-card:nth-child(3) { animation-delay: 0.3s; }
+        .product-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Modal styles */
+        .modal-overlay {
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-content {
+            animation: popIn 0.3s ease-out;
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="app-container bg-white rounded-3xl shadow-2xl mx-auto my-8 overflow-hidden relative">
+        <!-- Main Content -->
+        <main id="main-content" class="p-6 pb-24">
+            
+            <!-- Page 1: Dashboard (Default) -->
+            <div id="dashboard-page" class="page">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Krishi Rakshak</h1>
+                        <p class="text-gray-500">Welcome back, Farmer!</p>
+                    </div>
+                    <!-- Make user icon clickable -->
+                    <div id="profile-button" class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-green-200 transition">
+                        <i class="fas fa-user text-green-600"></i>
+                    </div>
+                </div>
+                <div class="main-content-grid">
+                    <!-- Left column for desktop -->
+                    <div>
+                        <!-- Weather Card -->
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-5 rounded-2xl mb-6 shadow-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="weather-location text-lg font-semibold">Gharuan, Kharar</p>
+                                    <p class="weather-condition text-sm opacity-90">Sunny</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="weather-temp text-4xl font-bold">32°C</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Government Schemes Board -->
+                        <div class="mt-6">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Government Schemes & News</h3>
+                            <div class="h-48 overflow-y-auto bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-3">
+                                <!-- Scheme Card 1 -->
+                                <div class="bg-white p-3 rounded-lg shadow-sm">
+                                    <h4 class="font-bold text-green-800">PM Kisan Samman Nidhi</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Financial support of ₹6,000 per year for small and marginal farmers.</p>
+                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
+                                </div>
+                                <!-- Scheme Card 2 -->
+                                <div class="bg-white p-3 rounded-lg shadow-sm">
+                                    <h4 class="font-bold text-green-800">Pradhan Mantri Fasal Bima Yojana</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Insurance coverage against crop failure due to natural calamities, pests or diseases.</p>
+                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
+                                </div>
+                                <!-- Scheme Card 3 -->
+                                <div class="bg-white p-3 rounded-lg shadow-sm">
+                                    <h4 class="font-bold text-green-800">Kisan Credit Card (KCC)</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Provides farmers with affordable credit for their farming and contingency needs.</p>
+                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right column for desktop / below on mobile -->
+                    <div>
+                         <!-- Quick Actions Grid -->
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Quick Actions</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div id="diagnose-button" class="action-card bg-green-50 p-4 rounded-xl text-center cursor-pointer hover:bg-green-100 transition">
+                                <i class="fas fa-leaf text-3xl text-green-600 mb-2"></i>
+                                <p class="font-semibold text-gray-700">Diagnose</p>
+                            </div>
+                            <div id="irrigation-button" class="action-card bg-blue-50 p-4 rounded-xl text-center cursor-pointer hover:bg-blue-100 transition">
+                                <i class="fas fa-tint text-3xl text-blue-600 mb-2"></i>
+                                <p class="font-semibold text-gray-700">Irrigation</p>
+                            </div>
+                            <div id="market-prices-button" class="action-card bg-yellow-50 p-4 rounded-xl text-center cursor-pointer hover:bg-yellow-100 transition">
+                                <i class="fas fa-shopping-cart text-3xl text-yellow-600 mb-2"></i>
+                                <p class="font-semibold text-gray-700">Marketplace</p>
+                            </div>
+                            <div id="kendra-button" class="action-card bg-purple-50 p-4 rounded-xl text-center cursor-pointer hover:bg-purple-100 transition">
+                                <i class="fas fa-map-marker-alt text-3xl text-purple-600 mb-2"></i>
+                                <p class="font-semibold text-gray-700">Krishi Kendra</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 2: Diagnose -->
+            <div id="diagnose-page" class="page hidden text-center">
+                 <div class="flex items-center mb-6">
+                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                </div>
+                <div id="diagnose-upload">
+                    <h2 class="text-xl font-semibold mb-2">Advanced Crop Analysis</h2>
+                    <p class="text-gray-600 mb-6">Upload a standard, multispectral, or hyperspectral image for analysis.</p>
+                    
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        <p class="text-gray-500 mt-2">Tap to upload image file</p>
+                    </div>
+
+                    <input type="file" id="leaf-image-input" class="hidden" accept="image/*">
+                    <button id="upload-button" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        Select Image File
+                    </button>
+                </div>
+                
+                <div id="diagnose-loading" class="hidden">
+                     <div class="flex flex-col items-center justify-center pt-16">
+                        <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="mt-4 text-gray-600">Analyzing Image...</p>
+                    </div>
+                </div>
+
+                <div id="diagnose-result" class="hidden text-left">
+                    <h2 class="text-xl font-semibold mb-4">Analysis Result</h2>
+                    <img id="result-image" src="https://placehold.co/400x300/e2e8f0/cbd5e0?text=Your+Image" alt="Uploaded leaf" class="rounded-lg mb-4 w-full">
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <div>
+                            <p class="font-semibold text-gray-800">Detected Disease:</p>
+                            <p id="disease-name" class="text-lg text-red-600 font-bold">Tomato Late Blight</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Confidence:</p>
+                            <p id="confidence-score" class="text-green-700">96.8%</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">Symptoms:</p>
+                            <ul class="list-disc list-inside text-gray-600 text-sm">
+                                <li>Dark, water-soaked spots on leaves.</li>
+                                <li>White, fuzzy mold on the underside of leaves.</li>
+                                <li>Dark, greasy-looking spots on tomato fruit.</li>
+                            </ul>
+                        </div>
+                         <div>
+                            <p class="font-semibold text-yellow-800"><i class="fas fa-seedling mr-1"></i> Homely & Organic Remedy:</p>
+                            <p id="recommendation" class="text-gray-600 text-sm">Mix 1 tablespoon of baking soda and 1 teaspoon of neem oil in 1 litre of water. Spray on the affected plants every 7 days. This helps to change the pH of the leaf surface, making it difficult for fungus to grow.</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-red-800"><i class="fas fa-flask mr-1"></i> Chemical Treatment:</p>
+                            <p id="chemical-recommendation" class="text-gray-600 text-sm">For severe cases, apply a copper-based fungicide. Always follow the instructions on the product label and wear safety equipment.</p>
+                        </div>
+                    </div>
+                     <button id="gemini-insights-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity">
+                        ✨ Get Deeper Insights with AI
+                    </button>
+                     <button id="diagnose-again-button" class="mt-2 w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
+                        Analyze Another
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 3: Irrigation -->
+            <div id="irrigation-page" class="page hidden">
+                 <div class="flex items-center mb-6">
+                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                </div>
+                 <h2 class="text-xl font-semibold mb-6">Irrigation Control</h2>
+                 <div class="bg-gray-50 p-6 rounded-2xl text-center">
+                    <div class="mb-6">
+                        <p class="font-semibold mb-2">Operation Mode</p>
+                        <div class="inline-flex rounded-lg shadow-sm">
+                            <button data-mode="manual" class="pump-mode-btn py-2 px-6 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button>
+                            <button data-mode="auto" class="pump-mode-btn py-2 px-6 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button>
+                        </div>
+                    </div>
+                     <p class="text-gray-500 text-sm">Soil Moisture</p>
+                     <p class="text-6xl font-bold text-blue-600 my-2">45%</p>
+                     <div class="w-full bg-gray-200 rounded-full h-4 my-4">
+                         <div class="bg-blue-500 h-4 rounded-full" style="width: 45%;"></div>
+                     </div>
+                     <div class="flex justify-between items-center mt-6">
+                         <p class="font-semibold">Pump Status</p>
+                         <button id="pump-toggle" class="bg-red-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-red-600 transition">OFF</button>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Page 4: Krishi Kendra -->
+            <div id="kendra-page" class="page hidden">
+                <div class="flex items-center mb-6">
+                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                </div>
+                <h2 id="kendra-title" class="text-xl font-semibold mb-4">Finding Nearest Krishi Kendra...</h2>
+                <div id="map" class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <p class="text-gray-500 p-4 text-center">Loading map with your location...</p>
+                </div>
+            </div>
+            
+            <!-- NEW Page 5: Farmer Profile -->
+            <div id="profile-page" class="page hidden">
+                 <div class="flex items-center mb-6">
+                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
+                </div>
+                <div class="text-center mb-8">
+                     <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user text-4xl text-green-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Neeraj Kumar</h2>
+                    <p class="text-gray-500">Gharuan, Kharar</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Soil Health Card -->
+                    <div class="bg-yellow-50 p-4 rounded-xl">
+                        <h3 class="font-bold text-lg mb-3 text-yellow-800"><i class="fas fa-spa mr-2"></i>Soil Health</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <p><strong>Type:</strong> <span id="soil-type" class="font-normal">Silty Loam</span></p>
+                            <p><strong>Best Crops:</strong> <span class="font-normal">Maize, Wheat, Vegetables</span></p>
+                             <p><strong>Current Crop:</strong> <span id="current-crop" class="font-normal">Tomato</span></p>
+                        </div>
+                        <button id="gemini-plan-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm">
+                           ✨ Generate Crop Plan with AI
+                        </button>
+                    </div>
+
+                    <!-- Irrigation Card -->
+                    <div class="bg-blue-50 p-4 rounded-xl">
+                        <h3 class="font-bold text-lg mb-3 text-blue-800"><i class="fas fa-tint mr-2"></i>Irrigation Status</h3>
+                         <div class="mb-3 text-center">
+                            <p class="font-semibold text-sm mb-1">Operation Mode</p>
+                            <div class="inline-flex rounded-lg shadow-sm text-sm">
+                                <button data-mode="manual" class="pump-mode-btn py-1 px-4 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button>
+                                <button data-mode="auto" class="pump-mode-btn py-1 px-4 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button>
+                            </div>
+                        </div>
+                        <div class="text-center mb-3">
+                            <p class="text-gray-500 text-sm">Soil Moisture</p>
+                            <p class="text-4xl font-bold text-blue-600">45%</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold">Pump Status</p>
+                            <button id="pump-toggle-profile" class="bg-red-500 text-white font-bold py-2 px-5 rounded-full shadow-md hover:bg-red-600 transition">OFF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Scans -->
+                <div class="mt-8">
+                    <h3 class="font-bold text-lg mb-3 text-gray-800"><i class="fas fa-history mr-2"></i>Recent Scans</h3>
+                    <div id="recent-scans-list" class="space-y-3">
+                        <p id="no-scans-placeholder" class="text-gray-500 text-center py-4">No scans performed yet.</p>
+                        <!-- Scan results will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW Page 6: Marketplace -->
+            <div id="market-page" class="page hidden flex flex-col h-full">
+                <div class="flex items-center mb-6 flex-shrink-0">
+                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">Marketplace</h2>
+                
+                <!-- Scrollable container for all market content -->
+                <div class="overflow-y-auto flex-grow pr-2">
+                    <!-- Pesticides Section -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Pesticides & Fertilizers</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Product Card -->
+                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Neem+Oil" alt="Neem Oil" class="w-full h-32 object-cover rounded-md mb-4">
+                                <h4 class="font-bold text-gray-800">Neem Oil (1L)</h4>
+                                <p class="text-gray-600 text-lg font-semibold mb-2">₹750</p>
+                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
+                            </div>
+                            <!-- Product Card -->
+                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                 <img src="https://placehold.co/400x300/e2e8f0/334155?text=Urea+Bags" alt="Urea Bags" class="w-full h-32 object-cover rounded-md mb-4">
+                                <h4 class="font-bold text-gray-800">Urea Fertilizer (45kg)</h4>
+                                <p class="text-gray-600 text-lg font-semibold mb-2">₹266</p>
+                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Equipment Section -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Safety Equipment</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Product Card -->
+                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Gloves" alt="Gloves" class="w-full h-32 object-cover rounded-md mb-4">
+                                <h4 class="font-bold text-gray-800">Hand Gloves</h4>
+                                <p class="text-gray-600 text-lg font-semibold mb-2">₹150</p>
+                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
+                            </div>
+                            <!-- Product Card -->
+                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Face+Mask" alt="Face Mask" class="w-full h-32 object-cover rounded-md mb-4">
+                                <h4 class="font-bold text-gray-800">Respirator Mask</h4>
+                                <p class="text-gray-600 text-lg font-semibold mb-2">₹499</p>
+                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-white border-t border-gray-200 flex justify-around md:rounded-b-3xl">
+            <button data-page="dashboard-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition active">
+                <i class="fas fa-home"></i>
+                <span class="block text-xs">Home</span>
+            </button>
+            <button data-page="diagnose-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
+                <i class="fas fa-leaf"></i>
+                <span class="block text-xs">Diagnose</span>
+            </button>
+            <button data-page="irrigation-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
+                 <i class="fas fa-tint"></i>
+                <span class="block text-xs">Irrigation</span>
+            </button>
+             <button data-page="kendra-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
+                 <i class="fas fa-map-marker-alt"></i>
+                <span class="block text-xs">Kendra</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Gemini AI Modal -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-overlay">
+        <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-lg font-bold text-gray-800">✨ AI Generated Insights</h3>
+                <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto">
+                <!-- Spinner -->
+                <div id="modal-spinner" class="flex flex-col items-center justify-center py-10">
+                    <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="mt-4 text-gray-600">Generating response...</p>
+                </div>
+                <!-- Content -->
+                <div id="modal-content-area" class="text-gray-700 space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Logic MUST be loaded after the Google Maps API -->
+    <script>
+        // This function will be called by the Google Maps script once it's loaded
+        function initApp() {
+            // Firebase Configuration Object has been inserted below
+            const firebaseConfig = {
+                apiKey: "AIzaSyB_ZgpYxTyF0B-hUH2xvpmdqwLaQUU8-ig",
+                authDomain: "krishirakshakapp.firebaseapp.com",
+                projectId: "krishirakshakapp",
+                storageBucket: "krishirakshakapp.appspot.com",
+                messagingSenderId: "1033780651035",
+                appId: "1:1033780651035:web:7f3c1bbeb18ef8fb9d04be",
+                measurementId: "G-YQ9N32BF8V"
+            };
+
+            // --- Page Navigation & UI Logic ---
+            const pages = document.querySelectorAll('.page');
+            const navItems = document.querySelectorAll('.nav-item');
+            const profileButton = document.getElementById('profile-button');
+            const backButtons = document.querySelectorAll('.back-button');
+
+            function showPage(pageId) {
+                pages.forEach(page => page.classList.add('hidden'));
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                }
+
+                const isMainPage = ['dashboard-page', 'diagnose-page', 'irrigation-page', 'kendra-page'].includes(pageId);
+                if (isMainPage) {
+                    navItems.forEach(item => {
+                        item.classList.toggle('active', item.dataset.page === pageId);
+                    });
+                } else {
+                     navItems.forEach(item => item.classList.remove('active'));
+                }
+                
+                if (pageId === 'kendra-page') {
+                    handleLocationAccess();
+                }
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => showPage(item.dataset.page));
+            });
+
+            // Dashboard buttons
+            document.getElementById('diagnose-button').addEventListener('click', () => showPage('diagnose-page'));
+            document.getElementById('irrigation-button').addEventListener('click', () => showPage('irrigation-page'));
+            document.getElementById('kendra-button').addEventListener('click', () => showPage('kendra-page'));
+            document.getElementById('market-prices-button').addEventListener('click', () => showPage('market-page'));
+            
+            profileButton.addEventListener('click', () => showPage('profile-page'));
+
+            backButtons.forEach(button => {
+                button.addEventListener('click', () => showPage('dashboard-page'));
+            });
+
+            // --- Diagnose Page Logic ---
+            const uploadButton = document.getElementById('upload-button');
+            const fileInput = document.getElementById('leaf-image-input');
+            const diagnoseUpload = document.getElementById('diagnose-upload');
+            const diagnoseLoading = document.getElementById('diagnose-loading');
+            const diagnoseResult = document.getElementById('diagnose-result');
+            const resultImage = document.getElementById('result-image');
+            const diagnoseAgainButton = document.getElementById('diagnose-again-button');
+            const scansList = document.getElementById('recent-scans-list');
+            const noScansPlaceholder = document.getElementById('no-scans-placeholder');
+
+            uploadButton.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (event) => {
+                if (event.target.files && event.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { 
+                        resultImage.src = e.target.result; 
+                        
+                        diagnoseUpload.classList.add('hidden');
+                        diagnoseLoading.classList.remove('hidden');
+
+                        setTimeout(() => {
+                            diagnoseLoading.classList.add('hidden');
+                            diagnoseResult.classList.remove('hidden');
+                            
+                            // Add the new scan to the profile page
+                            addScanToProfile(e.target.result);
+                        }, 2000);
+                    }
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            });
+            
+            function addScanToProfile(imageSrc) {
+                if(noScansPlaceholder) {
+                    noScansPlaceholder.remove();
+                }
+
+                const disease = document.getElementById('disease-name').textContent;
+                const confidence = document.getElementById('confidence-score').textContent;
+                const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+                const isHealthy = disease.toLowerCase() === 'healthy';
+                const colorClass = isHealthy ? 'text-green-700' : 'text-red-600';
+
+                const newScanHTML = `
+                    <div class="flex items-center bg-gray-50 p-3 rounded-lg">
+                        <img src="${imageSrc}" class="w-14 h-14 object-cover rounded-md mr-4">
+                        <div class="flex-grow">
+                            <p class="font-semibold ${colorClass}">${disease}</p>
+                            <p class="text-sm text-gray-500">${date} - ${confidence} Confidence</p>
+                        </div>
+                    </div>`;
+
+                scansList.insertAdjacentHTML('afterbegin', newScanHTML); // 'afterbegin' adds it to the top
+            }
+
+            diagnoseAgainButton.addEventListener('click', () => {
+                diagnoseResult.classList.add('hidden');
+                diagnoseUpload.classList.remove('hidden');
+                fileInput.value = '';
+            });
+
+            // --- Irrigation Pump Logic ---
+            const allPumpToggleButtons = document.querySelectorAll('[id^="pump-toggle"]');
+            const allPumpModeButtons = document.querySelectorAll('.pump-mode-btn');
+
+            function setPumpState(button) {
+                const isOn = button.textContent === 'ON';
+                const newText = isOn ? 'OFF' : 'ON';
+                allPumpToggleButtons.forEach(btn => {
+                    btn.textContent = newText;
+                    btn.classList.toggle('bg-green-500', !isOn);
+                    btn.classList.toggle('hover:bg-green-600', !isOn);
+                    btn.classList.toggle('bg-red-500', isOn);
+                    btn.classList.toggle('hover:bg-red-600', isOn);
+                });
+            }
+
+            function setPumpMode(selectedMode) {
+                 allPumpModeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === selectedMode);
+                 });
+                 allPumpToggleButtons.forEach(btn => {
+                    btn.disabled = selectedMode === 'auto';
+                    btn.classList.toggle('opacity-50', selectedMode === 'auto');
+                    btn.classList.toggle('cursor-not-allowed', selectedMode === 'auto');
+                 });
+            }
+
+            allPumpToggleButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpState(e.target)));
+            allPumpModeButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpMode(e.target.dataset.mode)));
+            
+            // --- Location and Map Logic ---
+            const krishiKendras = [
+                { name: "Krishi Vigyan Kendra, SAS Nagar (Mohali)", lat: 30.6405, lng: 76.7237 },
+                { name: "Punjab Agricultural University, Ludhiana", lat: 30.9010, lng: 75.8573 },
+                { name: "Krishi Vigyan Kendra, Patiala", lat: 30.3398, lng: 76.3869 },
+                { name: "Krishi Vigyan Kendra, Ambala", lat: 30.3782, lng: 76.7767 }
+            ];
+
+            function getDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
+                return R * 2 * Math.asin(Math.sqrt(a));
+            }
+
+            function findNearestKendra(userLat, userLng) {
+                let closest = null;
+                let minDistance = Infinity;
+                krishiKendras.forEach(kendra => {
+                    const distance = getDistance(userLat, userLng, kendra.lat, kendra.lng);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closest = kendra;
+                    }
+                });
+                return closest;
+            }
+
+            function handleLocationAccess() {
+                const userLocation = { lat: 30.7456, lng: 76.6521 }; // Coordinates for Kharar
+                const nearestKendra = findNearestKendra(userLocation.lat, userLocation.lng);
+                
+                if (nearestKendra) {
+                    document.getElementById("kendra-title").textContent = `Nearest to Kharar: ${nearestKendra.name}`;
+                    initMap(userLocation, nearestKendra);
+                } else {
+                    document.getElementById("map").innerHTML = '<p class="text-gray-500">Could not find any Krishi Kendras.</p>';
+                }
+            }
+
+            function initMap(userLocation, nearestKendra) {
+                if (typeof google === 'object' && typeof google.maps === 'object') {
+                    const map = new google.maps.Map(document.getElementById("map"), { zoom: 10, center: userLocation });
+                    new google.maps.Marker({ position: userLocation, map, title: "Your Location (Kharar)", icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } });
+                    new google.maps.Marker({ position: nearestKendra, map, title: nearestKendra.name });
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend(new google.maps.LatLng(userLocation.lat, userLocation.lng));
+                    bounds.extend(new google.maps.LatLng(nearestKendra.lat, nearestKendra.lng));
+                    map.fitBounds(bounds);
+                } else {
+                     console.error("Google Maps API is not loaded.");
+                }
+            }
+
+            // --- Gemini API Integration ---
+            const geminiModal = document.getElementById('gemini-modal');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const modalTitle = document.getElementById('modal-title');
+            const modalSpinner = document.getElementById('modal-spinner');
+            const modalContentArea = document.getElementById('modal-content-area');
+
+            const geminiAPIKey = ""; // The Canvas will inject the key here
+            const geminiAPIUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiAPIKey}`;
+
+            async function callGemini(prompt) {
+                try {
+                    const payload = {
+                        contents: [{ parts: [{ text: prompt }] }]
+                    };
+                    const response = await fetch(geminiAPIUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    // Improved formatting for lists and headings
+                    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+                    formattedText = formattedText.replace(/\* (.*?)(<br>|$)/g, '<li class="ml-4 list-disc">$1</li>'); // List items
+                    formattedText = formattedText.replace(/\n/g, '<br>');
+                    return formattedText;
+                } catch (error) {
+                    console.error("Gemini API call failed:", error);
+                    return "Sorry, something went wrong while contacting the AI. Please try again later.";
+                }
+            }
+
+            function showModal(title) {
+                modalTitle.textContent = title;
+                modalContentArea.innerHTML = '';
+                modalSpinner.classList.remove('hidden');
+                geminiModal.classList.remove('hidden');
+            }
+
+            closeModalButton.addEventListener('click', () => geminiModal.classList.add('hidden'));
+
+            // Deeper Insights Button Logic
+            document.getElementById('gemini-insights-button').addEventListener('click', async () => {
+                const disease = document.getElementById('disease-name').textContent;
+                showModal(`✨ AI Insights for ${disease}`);
+                const prompt = `You are an agricultural expert. A farmer's plant has been diagnosed with ${disease}. Provide a detailed but easy-to-understand explanation covering: 1. A detailed list of common symptoms to confirm the diagnosis. 2. A simple, step-by-step organic home remedy. 3. Recommended chemical treatments for severe cases. 4. A list of preventive measures to avoid this disease in the future. Format the response clearly with headings.`;
+                const result = await callGemini(prompt);
+                modalContentArea.innerHTML = result;
+                modalSpinner.classList.add('hidden');
+            });
+
+            // Crop Plan Button Logic
+            document.getElementById('gemini-plan-button').addEventListener('click', async () => {
+                 const soil = document.getElementById('soil-type').textContent;
+                 const crop = document.getElementById('current-crop').textContent;
+                 showModal(`✨ AI Crop Plan for ${crop}`);
+                 const prompt = `You are an expert agronomist. A farmer in Kharar, India, has ${soil} soil and is currently growing ${crop}. Generate a simple, actionable 4-week plan for them. For each week, provide tips on watering, fertilization (suggesting common organic and chemical options), pest/disease monitoring, and general plant care. Keep the language simple for a local farmer. Format it with clear weekly headings.`;
+                 const result = await callGemini(prompt);
+                 modalContentArea.innerHTML = result;
+                 modalSpinner.classList.add('hidden');
+            });
+        }
+    </script>
+    <!-- Google Maps API Key has been inserted below, with the new callback parameter -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxyy-Wamh08ppaaAfJdytkLzq4zO9N8Xo&callback=initApp" async defer></script>
+</body>
+</html>
+
