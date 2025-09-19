@@ -123,7 +123,6 @@
                 </div>
                 <div class="mt-8"><h3 class="font-bold text-lg mb-3 text-gray-800"><i class="fas fa-history mr-2"></i>Recent Scans</h3>
                     <div id="recent-scans-list" class="space-y-3">
-                        <!-- ADDED: Sample Previous Scans -->
                         <div class="flex items-center bg-gray-50 p-3 rounded-lg"><img src="https://placehold.co/60x60/e2e8f0/334155?text=Scan1" class="w-14 h-14 object-cover rounded-md mr-4"><div class="flex-grow"><p class="font-semibold text-red-600">Potato Late Blight</p><p class="text-sm text-gray-500">Sep 18, 2025 - 98.2% Confidence</p></div></div>
                         <div class="flex items-center bg-gray-50 p-3 rounded-lg"><img src="https://placehold.co/60x60/e2e8f0/334155?text=Scan2" class="w-14 h-14 object-cover rounded-md mr-4"><div class="flex-grow"><p class="font-semibold text-green-700">Tomato Healthy</p><p class="text-sm text-gray-500">Sep 15, 2025 - 99.8% Confidence</p></div></div>
                         <p id="no-scans-placeholder" class="text-gray-500 text-center py-4 hidden">No new scans performed yet.</p>
@@ -417,7 +416,24 @@
             });
             document.getElementById('scheme-helper-button').addEventListener('click', () => schemeHelperModal.classList.remove('hidden'));
             closeSchemeModalButton.addEventListener('click', () => schemeHelperModal.classList.add('hidden'));
-            document.getElementById('ask-scheme-button').addEventListener('click', async () => { /* Logic for scheme helper */ });
+            document.getElementById('ask-scheme-button').addEventListener('click', async () => { 
+                const schemeSpinner = document.getElementById('scheme-spinner');
+                const schemeQuestionInput = document.getElementById('scheme-question-input');
+                const schemeResponseArea = document.getElementById('scheme-response-area');
+                const question = schemeQuestionInput.value;
+                if (!question) return;
+                
+                schemeResponseArea.innerHTML += `<p class="text-right text-blue-600 font-semibold">${question}</p>`;
+                schemeQuestionInput.value = '';
+                schemeSpinner.classList.remove('hidden');
+
+                const prompt = `You are a helpful AI assistant for Indian farmers, knowledgeable about government schemes like PM Kisan, Fasal Bima Yojana, and KCC. A farmer asked: "${question}". Provide a simple, clear, and helpful answer in plain language.`;
+                const result = await callGemini(prompt);
+                
+                schemeResponseArea.innerHTML += `<p class="text-left text-gray-800">${result}</p>`;
+                schemeSpinner.classList.add('hidden');
+                schemeResponseArea.scrollTop = schemeResponseArea.scrollHeight;
+             });
 
             function setPumpState(button) {
                 const isOn = button.textContent === 'ON';
