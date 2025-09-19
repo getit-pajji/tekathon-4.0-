@@ -6,439 +6,229 @@
     <title>Krishi Rakshak</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- NEW: Libraries for Real AI Image Recognition -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <style>
-        /* A little extra polish for the UI */
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: #f0fdf4; /* A light green fallback */
-            background-image: linear-gradient(to top, #f0fdf4 0%, #e6f7f0 100%);
-        }
-        /* Responsive container for mobile and desktop */
-        .app-container { 
-            width: 100%;
-            max-width: 420px; /* Mobile first max-width */
-            min-height: 800px; 
-            border: 4px solid #4ade80; /* Added green outline */
-        }
-        @media (min-width: 768px) { /* On desktop, allow it to be a bit wider */
-            .app-container {
-                max-width: 1000px;
-            }
-            .main-content-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 1.5rem;
-            }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; background-image: linear-gradient(to top, #f0fdf4 0%, #e6f7f0 100%); }
+        .app-container { width: 100%; max-width: 420px; min-height: 800px; border: 4px solid #4ade80; }
+        @media (min-width: 768px) { .app-container { max-width: 1000px; } .main-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
         .nav-item.active { color: #16a34a; border-bottom: 2px solid #16a34a; }
         .page { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .pump-mode-btn.active { background-color: #16a34a; color: white; }
-
-        /* Animation for product cards */
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        .product-card {
-            /* Apply the animation */
-            animation: popIn 0.5s ease-out forwards;
-            opacity: 0; /* Start hidden */
-        }
-        /* Stagger the animation for each card */
-        .product-card:nth-child(1) { animation-delay: 0.1s; }
-        .product-card:nth-child(2) { animation-delay: 0.2s; }
-        .product-card:nth-child(3) { animation-delay: 0.3s; }
-        .product-card:nth-child(4) { animation-delay: 0.4s; }
-
-        /* Modal styles */
-        .modal-overlay {
-            animation: fadeIn 0.2s ease-out;
-        }
-        .modal-content {
-            animation: popIn 0.3s ease-out;
-        }
-
+        .modal-overlay { animation: fadeIn 0.2s ease-out; }
+        .modal-content { animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .mic-listening i { color: #ef4444 !important; } /* Red color for mic icon when listening */
+        @keyframes antennaPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        .antenna-tip { animation: antennaPulse 2s infinite ease-in-out; transform-origin: center; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-
     <div class="app-container bg-white rounded-3xl shadow-2xl mx-auto my-8 overflow-hidden relative">
-        <!-- Main Content -->
-        <main id="main-content" class="p-6 pb-24">
+        <main id="main-content" class="p-6 pb-24 h-full">
             
-            <!-- Page 1: Dashboard (Default) -->
+            <!-- Page 1: Dashboard -->
             <div id="dashboard-page" class="page">
                 <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Krishi Rakshak</h1>
-                        <p class="text-gray-500">Welcome back, Farmer!</p>
-                    </div>
-                    <!-- Make user icon clickable -->
-                    <div id="profile-button" class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-green-200 transition">
-                        <i class="fas fa-user text-green-600"></i>
-                    </div>
+                    <div><h1 class="text-2xl font-bold text-gray-800">Krishi Rakshak</h1><p class="text-gray-500">Welcome back, Farmer!</p></div>
+                    <div id="profile-button" class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-green-200 transition"><i class="fas fa-user text-green-600"></i></div>
                 </div>
                 <div class="main-content-grid">
-                    <!-- Left column for desktop -->
                     <div>
-                        <!-- Weather Card -->
                         <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-5 rounded-2xl mb-6 shadow-lg">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="weather-location text-lg font-semibold">Gharuan, Kharar</p>
-                                    <p class="weather-condition text-sm opacity-90">Sunny</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="weather-temp text-4xl font-bold">32°C</p>
-                                </div>
+                                <div><p class="text-lg font-semibold">Gharuan, Kharar</p><p class="text-sm opacity-90">Sunny</p></div>
+                                <div class="text-right"><p class="text-4xl font-bold">32°C</p></div>
                             </div>
                         </div>
-
-                        <!-- Government Schemes Board -->
                         <div class="mt-6">
                             <h3 class="text-lg font-semibold text-gray-700 mb-2">Government Schemes & News</h3>
                             <div class="h-48 overflow-y-auto bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-3">
-                                <!-- Scheme Card 1 -->
-                                <div class="bg-white p-3 rounded-lg shadow-sm">
-                                    <h4 class="font-bold text-green-800">PM Kisan Samman Nidhi</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Financial support of ₹6,000 per year for small and marginal farmers.</p>
-                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
-                                </div>
-                                <!-- Scheme Card 2 -->
-                                <div class="bg-white p-3 rounded-lg shadow-sm">
-                                    <h4 class="font-bold text-green-800">Pradhan Mantri Fasal Bima Yojana</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Insurance coverage against crop failure due to natural calamities, pests or diseases.</p>
-                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
-                                </div>
-                                <!-- Scheme Card 3 -->
-                                <div class="bg-white p-3 rounded-lg shadow-sm">
-                                    <h4 class="font-bold text-green-800">Kisan Credit Card (KCC)</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Provides farmers with affordable credit for their farming and contingency needs.</p>
-                                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">Learn More &rarr;</a>
-                                </div>
+                                <div class="bg-white p-3 rounded-lg shadow-sm"><h4 class="font-bold text-green-800">PM Kisan Samman Nidhi</h4><p class="text-sm text-gray-600 mt-1">Financial support of ₹6,000 per year for small and marginal farmers.</p></div>
+                                <div class="bg-white p-3 rounded-lg shadow-sm"><h4 class="font-bold text-green-800">Pradhan Mantri Fasal Bima Yojana</h4><p class="text-sm text-gray-600 mt-1">Insurance coverage against crop failure due to calamities, pests or diseases.</p></div>
                             </div>
+                             <button id="scheme-helper-button" class="mt-3 w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white py-2 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm">✨ Ask AI Helper about Schemes</button>
                         </div>
                     </div>
-                    <!-- Right column for desktop / below on mobile -->
                     <div>
-                         <!-- Quick Actions Grid -->
                         <h3 class="text-lg font-semibold text-gray-700 mb-2">Quick Actions</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div id="diagnose-button" class="action-card bg-green-50 p-4 rounded-xl text-center cursor-pointer hover:bg-green-100 transition">
-                                <i class="fas fa-leaf text-3xl text-green-600 mb-2"></i>
-                                <p class="font-semibold text-gray-700">Diagnose</p>
-                            </div>
-                            <div id="irrigation-button" class="action-card bg-blue-50 p-4 rounded-xl text-center cursor-pointer hover:bg-blue-100 transition">
-                                <i class="fas fa-tint text-3xl text-blue-600 mb-2"></i>
-                                <p class="font-semibold text-gray-700">Irrigation</p>
-                            </div>
-                            <div id="market-prices-button" class="action-card bg-yellow-50 p-4 rounded-xl text-center cursor-pointer hover:bg-yellow-100 transition">
-                                <i class="fas fa-shopping-cart text-3xl text-yellow-600 mb-2"></i>
-                                <p class="font-semibold text-gray-700">Marketplace</p>
-                            </div>
-                            <div id="kendra-button" class="action-card bg-purple-50 p-4 rounded-xl text-center cursor-pointer hover:bg-purple-100 transition">
-                                <i class="fas fa-map-marker-alt text-3xl text-purple-600 mb-2"></i>
-                                <p class="font-semibold text-gray-700">Krishi Kendra</p>
-                            </div>
-                             <!-- AI Helpline Button -->
-                            <a id="ai-helpline-button" href="tel:YOUR_TWILIO_PHONE_NUMBER" class="action-card col-span-2 bg-red-50 p-4 rounded-xl text-center cursor-pointer hover:bg-red-100 transition">
-                                <i class="fas fa-phone-alt text-3xl text-red-600 mb-2"></i>
-                                <p class="font-semibold text-gray-700">AI Helpline (for all farmers)</p>
-                            </a>
+                            <div id="diagnose-button" class="action-card bg-green-50 p-4 rounded-xl text-center cursor-pointer hover:bg-green-100 transition"><i class="fas fa-leaf text-3xl text-green-600 mb-2"></i><p>Diagnose</p></div>
+                            <div id="irrigation-button" class="action-card bg-blue-50 p-4 rounded-xl text-center cursor-pointer hover:bg-blue-100 transition"><i class="fas fa-tint text-3xl text-blue-600 mb-2"></i><p>Irrigation</p></div>
+                            <div id="market-analysis-button" class="action-card bg-yellow-50 p-4 rounded-xl text-center cursor-pointer hover:bg-yellow-100 transition"><i class="fas fa-chart-line text-3xl text-yellow-600 mb-2"></i><p>Market Analysis</p></div>
+                            <div id="kendra-button" class="action-card bg-purple-50 p-4 rounded-xl text-center cursor-pointer hover:bg-purple-100 transition"><i class="fas fa-map-marker-alt text-3xl text-purple-600 mb-2"></i><p>Krishi Kendra</p></div>
+                            <div id="ai-chat-button" class="action-card col-span-2 bg-indigo-50 p-4 rounded-xl text-center cursor-pointer hover:bg-indigo-100 transition"><i class="fas fa-comments text-3xl text-indigo-600 mb-2"></i><p class="font-semibold text-gray-700">Krishi Mitr (AI Assistant)</p></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Page 2: Diagnose -->
-            <div id="diagnose-page" class="page hidden text-center">
-                 <div class="flex items-center mb-6">
-                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                </div>
-                <div id="diagnose-upload">
+            <div id="diagnose-page" class="page hidden">
+                 <div class="flex items-center mb-6"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button></div>
+                <div id="diagnose-upload" class="text-center">
                     <h2 class="text-xl font-semibold mb-2">Advanced Crop Analysis</h2>
                     <p class="text-gray-600 mb-6">Upload an image for analysis. For multispectral images, please upload a pre-processed false-color composite.</p>
-                    
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                        <p class="text-gray-500 mt-2">Tap to upload image file</p>
-                    </div>
-
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg><p class="text-gray-500 mt-2">Tap to upload image file</p></div>
                     <input type="file" id="leaf-image-input" class="hidden" accept="image/*">
-                    <button id="upload-button" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                        Select Image File
-                    </button>
+                    <button id="upload-button" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">Select Image File</button>
                 </div>
-                
-                <div id="diagnose-loading" class="hidden">
-                     <div class="flex flex-col items-center justify-center pt-16">
-                        <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p class="mt-4 text-gray-600">Analyzing Image with AI...</p>
-                    </div>
-                </div>
-
+                <div id="diagnose-loading" class="hidden text-center"><div class="flex flex-col items-center justify-center pt-16"><div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div><p class="mt-4 text-gray-600">Analyzing Image with AI...</p></div></div>
                 <div id="diagnose-result" class="hidden text-left">
                     <h2 class="text-xl font-semibold mb-4">Analysis Result</h2>
                     <img id="result-image" src="https://placehold.co/400x300/e2e8f0/cbd5e0?text=Your+Image" alt="Uploaded leaf" class="rounded-lg mb-4 w-full">
                     <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                        <div>
-                            <p class="font-semibold text-gray-800">Detected Condition:</p>
-                            <p id="disease-name" class="text-lg text-red-600 font-bold"></p>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">Confidence:</p>
-                            <p id="confidence-score" class="text-green-700"></p>
-                        </div>
+                        <div><p class="font-semibold text-gray-800">Detected Condition:</p><p id="disease-name" class="text-lg text-red-600 font-bold"></p></div>
+                        <div><p class="font-semibold text-gray-800">Confidence:</p><p id="confidence-score" class="text-green-700"></p></div>
                     </div>
-                     <button id="gemini-insights-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity">
-                        ✨ Get Deeper Insights with AI
-                    </button>
-                     <button id="diagnose-again-button" class="mt-2 w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
-                        Analyze Another
-                    </button>
+                     <button id="gemini-insights-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity">✨ Get Deeper Insights with AI</button>
+                     <button id="diagnose-again-button" class="mt-2 w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors">Analyze Another</button>
                 </div>
             </div>
 
             <!-- Page 3: Irrigation -->
             <div id="irrigation-page" class="page hidden">
-                 <div class="flex items-center mb-6">
-                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                </div>
+                 <div class="flex items-center mb-6"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button></div>
                  <h2 class="text-xl font-semibold mb-6">Irrigation Control</h2>
                  <div class="bg-gray-50 p-6 rounded-2xl text-center">
-                    <div class="mb-6">
-                        <p class="font-semibold mb-2">Operation Mode</p>
-                        <div class="inline-flex rounded-lg shadow-sm">
-                            <button data-mode="manual" class="pump-mode-btn py-2 px-6 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button>
-                            <button data-mode="auto" class="pump-mode-btn py-2 px-6 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button>
-                        </div>
-                    </div>
-                     <p class="text-gray-500 text-sm">Soil Moisture</p>
-                     <p class="text-6xl font-bold text-blue-600 my-2">45%</p>
-                     <div class="w-full bg-gray-200 rounded-full h-4 my-4">
-                         <div class="bg-blue-500 h-4 rounded-full" style="width: 45%;"></div>
-                     </div>
-                     <div class="flex justify-between items-center mt-6">
-                         <p class="font-semibold">Pump Status</p>
-                         <button id="pump-toggle" class="bg-red-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-red-600 transition">OFF</button>
-                     </div>
+                    <div class="mb-6"><p class="font-semibold mb-2">Operation Mode</p><div class="inline-flex rounded-lg shadow-sm"><button data-mode="manual" class="pump-mode-btn py-2 px-6 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button><button data-mode="auto" class="pump-mode-btn py-2 px-6 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button></div></div>
+                     <p class="text-gray-500 text-sm">Soil Moisture</p><p class="text-6xl font-bold text-blue-600 my-2">45%</p>
+                     <div class="w-full bg-gray-200 rounded-full h-4 my-4"><div class="bg-blue-500 h-4 rounded-full" style="width: 45%;"></div></div>
+                     <div class="flex justify-between items-center mt-6"><p class="font-semibold">Pump Status</p><button id="pump-toggle" class="bg-red-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-red-600 transition">OFF</button></div>
                  </div>
             </div>
 
             <!-- Page 4: Krishi Kendra -->
             <div id="kendra-page" class="page hidden">
-                <div class="flex items-center mb-6">
-                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                </div>
+                <div class="flex items-center mb-6"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button></div>
                 <h2 class="text-xl font-semibold mb-4">Nearest Krishi Kendra</h2>
                 <div id="kendra-details" class="mb-4 bg-gray-50 p-4 rounded-lg text-left hidden">
-                    <h3 id="kendra-name" class="font-bold text-lg text-gray-800"></h3>
-                    <p id="kendra-address" class="text-gray-600"></p>
-                    <button id="get-directions-button" class="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                        Get Directions
-                    </button>
+                    <h3 id="kendra-name" class="font-bold text-lg text-gray-800"></h3><p id="kendra-address" class="text-gray-600"></p>
+                    <button id="get-directions-button" class="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Get Directions</button>
                 </div>
-                <div id="map" class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <p id="map-placeholder" class="text-gray-500 p-4 text-center">Requesting your location to find the nearest center...</p>
-                </div>
+                <div id="map" class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center"><p id="map-placeholder" class="text-gray-500 p-4 text-center">Requesting your location...</p></div>
             </div>
             
             <!-- Page 5: Farmer Profile -->
             <div id="profile-page" class="page hidden">
-                 <div class="flex items-center mb-6">
-                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
-                </div>
+                 <div class="flex items-center mb-6"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button></div>
                 <div class="text-center mb-8">
-                     <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-user text-4xl text-green-600"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-800">Neeraj Kumar</h2>
-                    <p class="text-gray-500">Gharuan, Kharar</p>
+                     <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-user text-4xl text-green-600"></i></div>
+                    <h2 class="text-2xl font-bold text-gray-800">Neeraj Kumar</h2><p class="text-gray-500">Gharuan, Kharar</p>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Soil Health Card -->
-                    <div class="bg-yellow-50 p-4 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 text-yellow-800"><i class="fas fa-spa mr-2"></i>Soil Health</h3>
-                        <div class="space-y-2 text-gray-700">
-                            <p><strong>Type:</strong> <span id="soil-type" class="font-normal">Silty Loam</span></p>
-                            <p><strong>Best Crops:</strong> <span class="font-normal">Maize, Wheat, Vegetables</span></p>
-                             <p><strong>Current Crop:</strong> <span id="current-crop" class="font-normal">Tomato</span></p>
-                        </div>
-                        <button id="gemini-plan-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm">
-                           ✨ Generate Crop Plan with AI
-                        </button>
-                    </div>
-
-                    <!-- Irrigation Card -->
-                    <div class="bg-blue-50 p-4 rounded-xl">
-                        <h3 class="font-bold text-lg mb-3 text-blue-800"><i class="fas fa-tint mr-2"></i>Irrigation Status</h3>
-                         <div class="mb-3 text-center">
-                            <p class="font-semibold text-sm mb-1">Operation Mode</p>
-                            <div class="inline-flex rounded-lg shadow-sm text-sm">
-                                <button data-mode="manual" class="pump-mode-btn py-1 px-4 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button>
-                                <button data-mode="auto" class="pump-mode-btn py-1 px-4 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button>
-                            </div>
-                        </div>
-                        <div class="text-center mb-3">
-                            <p class="text-gray-500 text-sm">Soil Moisture</p>
-                            <p class="text-4xl font-bold text-blue-600">45%</p>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <p class="font-semibold">Pump Status</p>
-                            <button id="pump-toggle-profile" class="bg-red-500 text-white font-bold py-2 px-5 rounded-full shadow-md hover:bg-red-600 transition">OFF</button>
-                        </div>
-                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-xl"><h3 class="font-bold text-lg mb-3 text-yellow-800"><i class="fas fa-spa mr-2"></i>Soil Health</h3><div class="space-y-2 text-gray-700"><p><strong>Type:</strong> <span id="soil-type">Silty Loam</span></p><p><strong>Best Crops:</strong> <span>Maize, Wheat, Vegetables</span></p><p><strong>Current Crop:</strong> <span id="current-crop">Tomato</span></p></div><button id="gemini-plan-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm">✨ Generate Crop Plan with AI</button></div>
+                    <div class="bg-blue-50 p-4 rounded-xl"><h3 class="font-bold text-lg mb-3 text-blue-800"><i class="fas fa-tint mr-2"></i>Irrigation Status</h3><div class="mb-3 text-center"><p class="font-semibold text-sm mb-1">Operation Mode</p><div class="inline-flex rounded-lg shadow-sm text-sm"><button data-mode="manual" class="pump-mode-btn py-1 px-4 rounded-l-lg bg-gray-200 text-gray-700 active">Manual</button><button data-mode="auto" class="pump-mode-btn py-1 px-4 rounded-r-lg bg-gray-200 text-gray-700">Automatic</button></div></div><div class="text-center mb-3"><p class="text-gray-500 text-sm">Soil Moisture</p><p class="text-4xl font-bold text-blue-600">45%</p></div><div class="flex justify-between items-center"><p class="font-semibold">Pump Status</p><button id="pump-toggle-profile" class="bg-red-500 text-white font-bold py-2 px-5 rounded-full shadow-md hover:bg-red-600 transition">OFF</button></div></div>
                 </div>
-
-                <!-- Recent Scans -->
-                <div class="mt-8">
-                    <h3 class="font-bold text-lg mb-3 text-gray-800"><i class="fas fa-history mr-2"></i>Recent Scans</h3>
+                <div class="mt-8"><h3 class="font-bold text-lg mb-3 text-gray-800"><i class="fas fa-history mr-2"></i>Recent Scans</h3>
                     <div id="recent-scans-list" class="space-y-3">
-                        <p id="no-scans-placeholder" class="text-gray-500 text-center py-4">No scans performed yet.</p>
-                        <!-- Scan results will be added here dynamically -->
+                        <!-- ADDED: Sample Previous Scans -->
+                        <div class="flex items-center bg-gray-50 p-3 rounded-lg"><img src="https://placehold.co/60x60/e2e8f0/334155?text=Scan1" class="w-14 h-14 object-cover rounded-md mr-4"><div class="flex-grow"><p class="font-semibold text-red-600">Potato Late Blight</p><p class="text-sm text-gray-500">Sep 18, 2025 - 98.2% Confidence</p></div></div>
+                        <div class="flex items-center bg-gray-50 p-3 rounded-lg"><img src="https://placehold.co/60x60/e2e8f0/334155?text=Scan2" class="w-14 h-14 object-cover rounded-md mr-4"><div class="flex-grow"><p class="font-semibold text-green-700">Tomato Healthy</p><p class="text-sm text-gray-500">Sep 15, 2025 - 99.8% Confidence</p></div></div>
+                        <p id="no-scans-placeholder" class="text-gray-500 text-center py-4 hidden">No new scans performed yet.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Page 6: Marketplace -->
-            <div id="market-page" class="page hidden flex flex-col h-full">
-                <div class="flex items-center mb-6 flex-shrink-0">
-                    <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">Marketplace</h2>
-                
-                <div class="overflow-y-auto flex-grow pr-2">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Pesticides & Fertilizers</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Neem+Oil" alt="Neem Oil" class="w-full h-32 object-cover rounded-md mb-4">
-                                <h4 class="font-bold text-gray-800">Neem Oil (1L)</h4>
-                                <p class="text-gray-600 text-lg font-semibold mb-2">₹750</p>
-                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
-                            </div>
-                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                 <img src="https://placehold.co/400x300/e2e8f0/334155?text=Urea+Bags" alt="Urea Bags" class="w-full h-32 object-cover rounded-md mb-4">
-                                <h4 class="font-bold text-gray-800">Urea Fertilizer (45kg)</h4>
-                                <p class="text-gray-600 text-lg font-semibold mb-2">₹266</p>
-                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Safety Equipment</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Gloves" alt="Gloves" class="w-full h-32 object-cover rounded-md mb-4">
-                                <h4 class="font-bold text-gray-800">Hand Gloves</h4>
-                                <p class="text-gray-600 text-lg font-semibold mb-2">₹150</p>
-                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
-                            </div>
-                            <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                <img src="https://placehold.co/400x300/e2e8f0/334155?text=Face+Mask" alt="Face Mask" class="w-full h-32 object-cover rounded-md mb-4">
-                                <h4 class="font-bold text-gray-800">Respirator Mask</h4>
-                                <p class="text-gray-600 text-lg font-semibold mb-2">₹499</p>
-                                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Page 6: Market Analysis -->
+            <div id="market-analysis-page" class="page hidden flex flex-col h-full">
+                <div class="flex items-center mb-6 flex-shrink-0"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">Market Analysis</h2>
+                <div class="space-y-4">
+                    <div><label for="crop-select" class="block text-sm font-medium text-gray-700">Select Crop:</label><select id="crop-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"><option>Tomato</option><option>Wheat</option><option>Potato</option><option>Onion</option></select></div>
+                    <button id="get-forecast-button" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity">✨ Get AI Price Forecast</button>
                 </div>
             </div>
+            
+            <!-- Page 7: AI Chat Assistant Page "Krishi Mitr" -->
+            <div id="chat-page" class="page hidden flex flex-col h-full">
+                <div class="flex items-center mb-4 flex-shrink-0"><button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button></div>
+                <div class="flex items-center mb-4 flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 16L5 18C5 19.1046 5.89543 20 7 20H17C18.1046 20 19 19.1046 19 18V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 11H9C7.89543 11 7 10.1046 7 9V9C7 7.89543 7.89543 7 9 7H15C16.1046 7 17 7.89543 17 9V9C17 10.1046 16.1046 11 15 11Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/><path d="M9 7V5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle class="antenna-tip" cx="12" cy="1.5" r="1.5" fill="#34D399"/></svg>
+                    </div>
+                    <div><h2 class="text-xl font-bold text-gray-800">Krishi Mitr</h2><p class="text-sm text-gray-500">Your personal farming assistant</p></div>
+                </div>
+                <div id="chat-messages" class="flex-grow overflow-y-auto bg-gray-50 p-4 rounded-lg space-y-4">
+                    <div class="flex"><div class="bg-green-100 text-green-800 p-3 rounded-lg max-w-xs"><p>Namaste! How can I help you with your farming questions today? You can type or use the microphone to talk.</p></div></div>
+                </div>
+                <div class="mt-4 flex-shrink-0 flex items-center">
+                    <input type="text" id="chat-input" placeholder="Ask about crops, soil, schemes..." class="flex-grow border-gray-300 rounded-l-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <button id="chat-mic-button" class="bg-gray-200 text-gray-600 px-4 py-2 hover:bg-gray-300"><i class="fas fa-microphone"></i></button>
+                    <button id="chat-send-button" class="bg-green-600 text-white px-4 py-2 rounded-r-lg font-semibold hover:bg-green-700"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
         </main>
-
-        <!-- Bottom Navigation -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-white border-t border-gray-200 flex justify-around md:rounded-b-3xl">
-            <button data-page="dashboard-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition active">
-                <i class="fas fa-home"></i>
-                <span class="block text-xs">Home</span>
-            </button>
-            <button data-page="diagnose-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
-                <i class="fas fa-leaf"></i>
-                <span class="block text-xs">Diagnose</span>
-            </button>
-            <button data-page="irrigation-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
-                 <i class="fas fa-tint"></i>
-                <span class="block text-xs">Irrigation</span>
-            </button>
-             <button data-page="kendra-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition">
-                 <i class="fas fa-map-marker-alt"></i>
-                <span class="block text-xs">Kendra</span>
-            </button>
+             <button data-page="dashboard-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition active"><i class="fas fa-home"></i><span class="block text-xs">Home</span></button>
+            <button data-page="diagnose-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition"><i class="fas fa-leaf"></i><span class="block text-xs">Diagnose</span></button>
+            <button data-page="irrigation-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition"><i class="fas fa-tint"></i><span class="block text-xs">Irrigation</span></button>
+            <button data-page="kendra-page" class="nav-item flex-1 py-4 text-center text-gray-500 hover:text-green-600 transition"><i class="fas fa-map-marker-alt"></i><span class="block text-xs">Kendra</span></button>
         </nav>
     </div>
-
-    <!-- Gemini AI Modal -->
+    <!-- Modals -->
     <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-overlay">
         <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b">
-                <h3 id="modal-title" class="text-lg font-bold text-gray-800">✨ AI Generated Insights</h3>
-                <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">&times;</button>
-            </div>
-            <div id="modal-body" class="p-6 overflow-y-auto">
-                <div id="modal-spinner" class="flex flex-col items-center justify-center py-10">
-                    <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="mt-4 text-gray-600">Generating response...</p>
-                </div>
-                <div id="modal-content-area" class="text-gray-700 space-y-4"></div>
-            </div>
+            <div class="flex justify-between items-center p-4 border-b"><h3 id="modal-title" class="text-lg font-bold text-gray-800"></h3><button id="close-modal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+            <div class="p-6 overflow-y-auto"><div id="modal-spinner" class="flex flex-col items-center justify-center py-10"><div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div><p class="mt-4 text-gray-600">Generating response...</p></div><div id="modal-content-area" class="text-gray-700 space-y-4"></div></div>
+        </div>
+    </div>
+    <div id="scheme-helper-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-overlay">
+         <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">✨ AI Scheme Helper</h3><button id="close-scheme-modal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+            <div class="p-6 overflow-y-auto flex-grow flex flex-col"><div id="scheme-response-area" class="text-gray-700 space-y-2 flex-grow h-64 overflow-y-auto mb-4 bg-gray-50 p-3 rounded-md"><p>Hello! How can I help you with government schemes today?</p></div><div id="scheme-spinner" class="hidden flex items-center justify-center py-2"><div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div><div class="flex space-x-2"><input type="text" id="scheme-question-input" placeholder="e.g., Am I eligible for PM Kisan?" class="flex-grow border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm"><button id="ask-scheme-button" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700"><i class="fas fa-paper-plane"></i></button></div></div>
         </div>
     </div>
 
     <script>
         function initApp() {
-            const firebaseConfig = {
-                apiKey: "AIzaSyB_ZgpYxTyF0B-hUH2xvpmdqwLaQUU8-ig",
-                authDomain: "krishirakshakapp.firebaseapp.com",
-                projectId: "krishirakshakapp",
-                storageBucket: "krishirakshakapp.appspot.com",
-                messagingSenderId: "1033780651035",
-                appId: "1:1033780651035:web:7f3c1bbeb18ef8fb9d04be",
-                measurementId: "G-YQ9N32BF8V"
-            };
-
+            // Reusable Gemini API Function
+            async function callGemini(prompt) {
+                try {
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+                    if (!response.ok) return "Sorry, AI server error.";
+                    const result = await response.json();
+                    return result.response;
+                } catch (error) {
+                    return "Sorry, could not connect to AI service.";
+                }
+            }
+            
+            // --- Page Navigation & UI Logic ---
             const pages = document.querySelectorAll('.page');
             const navItems = document.querySelectorAll('.nav-item');
-            const profileButton = document.getElementById('profile-button');
             const backButtons = document.querySelectorAll('.back-button');
+            const profileButton = document.getElementById('profile-button');
 
             function showPage(pageId) {
-                pages.forEach(page => page.classList.add('hidden'));
-                const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.remove('hidden');
-                }
-                const isMainPage = ['dashboard-page', 'diagnose-page', 'irrigation-page', 'kendra-page'].includes(pageId);
-                if (isMainPage) {
-                    navItems.forEach(item => {
-                        item.classList.toggle('active', item.dataset.page === pageId);
-                    });
-                } else {
-                     navItems.forEach(item => item.classList.remove('active'));
-                }
+                pages.forEach(p => p.classList.add('hidden'));
+                const target = document.getElementById(pageId);
+                if(target) target.classList.remove('hidden');
+                
+                navItems.forEach(item => {
+                    item.classList.toggle('active', item.dataset.page === pageId);
+                });
                 if (pageId === 'kendra-page') {
                     handleLocationAccess();
                 }
             }
-
+            
             navItems.forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
+            backButtons.forEach(b => b.addEventListener('click', () => showPage('dashboard-page')));
             document.getElementById('diagnose-button').addEventListener('click', () => showPage('diagnose-page'));
             document.getElementById('irrigation-button').addEventListener('click', () => showPage('irrigation-page'));
+            document.getElementById('market-analysis-button').addEventListener('click', () => showPage('market-analysis-page'));
             document.getElementById('kendra-button').addEventListener('click', () => showPage('kendra-page'));
-            document.getElementById('market-prices-button').addEventListener('click', () => showPage('market-page'));
-            profileButton.addEventListener('click', () => showPage('profile-page'));
-            backButtons.forEach(button => button.addEventListener('click', () => showPage('dashboard-page')));
-
+            document.getElementById('profile-button').addEventListener('click', () => showPage('profile-page'));
+            document.getElementById('ai-chat-button').addEventListener('click', () => showPage('chat-page'));
+            
+            // --- Diagnosis Logic ---
             const uploadButton = document.getElementById('upload-button');
             const fileInput = document.getElementById('leaf-image-input');
             const diagnoseUpload = document.getElementById('diagnose-upload');
@@ -450,31 +240,19 @@
             const noScansPlaceholder = document.getElementById('no-scans-placeholder');
             const diseaseNameEl = document.getElementById('disease-name');
             const confidenceScoreEl = document.getElementById('confidence-score');
-            
-            // --- NEW: AI Diagnosis Logic ---
-            const primaryImageApiKey = "AIzaSyCOAj-NRpl0PtRlo869u19gQkKO3cb_XNs"; // Your provided key for a primary model
-            // IMPORTANT: This is a working demo model for various plant diseases.
-            // For your final project, you should train your own model on Teachable Machine and replace this URL.
             const secondaryModelURL = "https://teachablemachine.withgoogle.com/models/D5g-632k7/";
-            let model; // To hold the loaded Teachable Machine model
+            let model; 
 
             async function loadSecondaryModel() {
-                if (model) return model; // Don't load if it's already loaded
+                if (model) return model;
                 try {
-                    const modelURL = secondaryModelURL + "model.json";
-                    const metadataURL = secondaryModelURL + "metadata.json";
-                    model = await tmImage.load(modelURL, metadataURL);
-                    console.log("Secondary AI model loaded successfully!");
+                    model = await tmImage.load(secondaryModelURL + "model.json", secondaryModelURL + "metadata.json");
                     return model;
-                } catch (error) {
-                    console.error("Failed to load secondary model:", error);
-                    return null;
-                }
+                } catch (error) { console.error("Failed to load secondary model:", error); return null; }
             }
-            loadSecondaryModel(); // Pre-load the model when the app starts
+            loadSecondaryModel(); 
 
             uploadButton.addEventListener('click', () => fileInput.click());
-
             fileInput.addEventListener('change', (event) => {
                 if (event.target.files && event.target.files[0]) {
                     const reader = new FileReader();
@@ -483,51 +261,24 @@
                         diagnoseUpload.classList.add('hidden');
                         diagnoseLoading.classList.remove('hidden');
                         diagnoseResult.classList.add('hidden');
-
-                        // --- REAL AI DIAGNOSIS LOGIC ---
-                        console.log("Attempting diagnosis with Primary AI (simulated)...");
-                        // In a real app, you would call your primary API here using `primaryImageApiKey`.
-                        // For this demo, we'll assume it's for hyperspectral and fallback to our working secondary model.
-
-                        console.log("Falling back to Secondary AI for standard image...");
                         const loadedModel = await loadSecondaryModel();
                         if (!loadedModel) {
-                            diseaseNameEl.textContent = "Error: AI Model could not be loaded. Please check the model URL.";
-                            confidenceScoreEl.textContent = "N/A";
+                            diseaseNameEl.textContent = "Error: AI Model could not be loaded.";
                             diagnoseLoading.classList.add('hidden');
                             diagnoseResult.classList.remove('hidden');
                             return;
                         }
-
                         try {
                             const prediction = await loadedModel.predict(resultImage);
-                            let highestPrediction = { className: "Unknown", probability: 0 };
-                            prediction.forEach(p => {
-                                if (p.probability > highestPrediction.probability) {
-                                    highestPrediction = p;
-                                }
-                            });
-                            
+                            let highestPrediction = prediction.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
                             const formattedClassName = highestPrediction.className.replace(/_/g, " ");
                             const formattedConfidence = (highestPrediction.probability * 100).toFixed(1) + "%";
-                            
                             diseaseNameEl.textContent = formattedClassName;
                             confidenceScoreEl.textContent = formattedConfidence;
-                            
-                            if (formattedClassName.toLowerCase().includes('healthy')) {
-                                diseaseNameEl.classList.remove('text-red-600');
-                                diseaseNameEl.classList.add('text-green-700');
-                            } else {
-                                diseaseNameEl.classList.add('text-red-600');
-                                diseaseNameEl.classList.remove('text-green-700');
-                            }
-                            
+                            diseaseNameEl.classList.toggle('text-red-600', !formattedClassName.toLowerCase().includes('healthy'));
+                            diseaseNameEl.classList.toggle('text-green-700', formattedClassName.toLowerCase().includes('healthy'));
                             addScanToProfile(e.target.result, formattedClassName, formattedConfidence);
-
-                        } catch (error) {
-                            console.error("Error during model prediction:", error);
-                            diseaseNameEl.textContent = "Error during analysis";
-                            confidenceScoreEl.textContent = "N/A";
+                        } catch (error) { diseaseNameEl.textContent = "Error during analysis";
                         } finally {
                             diagnoseLoading.classList.add('hidden');
                             diagnoseResult.classList.remove('hidden');
@@ -536,33 +287,137 @@
                     reader.readAsDataURL(event.target.files[0]);
                 }
             });
-            
             function addScanToProfile(imageSrc, disease, confidence) {
-                if(noScansPlaceholder) {
-                    noScansPlaceholder.style.display = 'none';
-                }
+                if(noScansPlaceholder) noScansPlaceholder.style.display = 'none';
                 const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const isHealthy = disease.toLowerCase().includes('healthy');
                 const colorClass = isHealthy ? 'text-green-700' : 'text-red-600';
-                const newScanHTML = `
-                    <div class="flex items-center bg-gray-50 p-3 rounded-lg">
-                        <img src="${imageSrc}" class="w-14 h-14 object-cover rounded-md mr-4">
-                        <div class="flex-grow">
-                            <p class="font-semibold ${colorClass}">${disease}</p>
-                            <p class="text-sm text-gray-500">${date} - ${confidence} Confidence</p>
-                        </div>
-                    </div>`;
+                const newScanHTML = `<div class="flex items-center bg-gray-50 p-3 rounded-lg"><img src="${imageSrc}" class="w-14 h-14 object-cover rounded-md mr-4"><div class="flex-grow"><p class="font-semibold ${colorClass}">${disease}</p><p class="text-sm text-gray-500">${date} - ${confidence} Confidence</p></div></div>`;
                 scansList.insertAdjacentHTML('afterbegin', newScanHTML);
             }
-
             diagnoseAgainButton.addEventListener('click', () => {
                 diagnoseResult.classList.add('hidden');
                 diagnoseUpload.classList.remove('hidden');
                 fileInput.value = '';
             });
 
+            // --- Krishi Mitr - AI Chat Assistant Logic ---
+            const chatInput = document.getElementById('chat-input');
+            const chatSendButton = document.getElementById('chat-send-button');
+            const chatMicButton = document.getElementById('chat-mic-button');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'hi-IN'; // Listen for Hindi
+                recognition.interimResults = false;
+                recognition.onstart = () => chatMicButton.classList.add('mic-listening');
+                recognition.onend = () => chatMicButton.classList.remove('mic-listening');
+                recognition.onresult = (event) => {
+                    chatInput.value = event.results[0][0].transcript;
+                    handleSendMessage();
+                };
+                recognition.onerror = (event) => { console.error('Speech recognition error:', event.error); chatMicButton.classList.remove('mic-listening'); };
+                chatMicButton.addEventListener('click', () => recognition.start());
+            } else { chatMicButton.style.display = 'none'; }
+            
+            chatSendButton.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+            async function handleSendMessage() {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+                appendMessage(userMessage, 'user');
+                chatInput.value = '';
+                appendMessage('...', 'ai', true);
+                const prompt = `You are Krishi Mitr, an agricultural AI assistant. A farmer asked in Hindi: "${userMessage}". Provide a helpful and concise answer in simple Hindi.`;
+                const aiResponse = await callGemini(prompt);
+                removeTypingIndicator();
+                appendMessage(aiResponse, 'ai');
+            }
+
+            function appendMessage(message, sender, isTyping = false) {
+                const wrapper = document.createElement('div');
+                const bubble = document.createElement('div');
+                wrapper.classList.add('flex');
+                bubble.innerHTML = `<p>${message}</p>`;
+                if (sender === 'user') {
+                    wrapper.classList.add('justify-end');
+                    bubble.classList.add('bg-blue-500', 'text-white', 'p-3', 'rounded-lg', 'max-w-xs');
+                } else {
+                    bubble.classList.add('bg-green-100', 'text-green-800', 'p-3', 'rounded-lg', 'max-w-xs');
+                    if (isTyping) {
+                        bubble.id = 'typing-indicator';
+                        bubble.innerHTML = `<div class="flex items-center space-x-1"><div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div><div class="w-2 h-2 bg-green-400 rounded-full animate-pulse [animation-delay:0.2s]"></div><div class="w-2 h-2 bg-green-400 rounded-full animate-pulse [animation-delay:0.4s]"></div></div>`;
+                    } else { speak(message.replace(/<[^>]*>/g, '')); }
+                }
+                wrapper.appendChild(bubble);
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function speak(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'hi-IN'; // Speak in Hindi
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+
+            function removeTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.parentElement.remove();
+            }
+
+            // --- Other feature logic ---
+            const geminiModal = document.getElementById('gemini-modal');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const modalTitle = document.getElementById('modal-title');
+            const modalSpinner = document.getElementById('modal-spinner');
+            const modalContentArea = document.getElementById('modal-content-area');
+            const schemeHelperModal = document.getElementById('scheme-helper-modal');
+            const closeSchemeModalButton = document.getElementById('close-scheme-modal-button');
             const allPumpToggleButtons = document.querySelectorAll('[id^="pump-toggle"]');
             const allPumpModeButtons = document.querySelectorAll('.pump-mode-btn');
+
+            function showModal(title) {
+                modalTitle.textContent = title;
+                modalContentArea.innerHTML = '';
+                modalSpinner.classList.remove('hidden');
+                geminiModal.classList.remove('hidden');
+            }
+            closeModalButton.addEventListener('click', () => geminiModal.classList.add('hidden'));
+            document.getElementById('gemini-insights-button').addEventListener('click', async () => {
+                const disease = diseaseNameEl.textContent;
+                showModal(`✨ AI Insights for ${disease}`);
+                const prompt = `You are an agricultural expert. A farmer's plant is diagnosed with ${disease}. Provide a detailed explanation covering symptoms, organic remedies, chemical treatments, and preventive measures.`;
+                const result = await callGemini(prompt);
+                modalContentArea.innerHTML = result;
+                modalSpinner.classList.add('hidden');
+            });
+            document.getElementById('get-forecast-button').addEventListener('click', async () => {
+                const crop = document.getElementById('crop-select').value;
+                showModal(`✨ AI Price Forecast for ${crop}`);
+                const prompt = `You are an expert agricultural market analyst for the Kharar, Punjab, India region. Provide a simple, one-paragraph price forecast for ${crop} for the next two weeks.`;
+                const result = await callGemini(prompt);
+                modalContentArea.innerHTML = result;
+                modalSpinner.classList.add('hidden');
+            });
+            document.getElementById('gemini-plan-button').addEventListener('click', async () => {
+                 const soil = document.getElementById('soil-type').textContent;
+                 const crop = document.getElementById('current-crop').textContent;
+                 showModal(`✨ AI Crop Plan for ${crop}`);
+                 const prompt = `You are an expert agronomist. A farmer in Kharar, India, with ${soil} soil is growing ${crop}. Generate a simple, 4-week action plan covering watering, fertilization, and pest monitoring.`;
+                 const result = await callGemini(prompt);
+                 modalContentArea.innerHTML = result;
+                 modalSpinner.classList.add('hidden');
+            });
+            document.getElementById('scheme-helper-button').addEventListener('click', () => schemeHelperModal.classList.remove('hidden'));
+            closeSchemeModalButton.addEventListener('click', () => schemeHelperModal.classList.add('hidden'));
+            document.getElementById('ask-scheme-button').addEventListener('click', async () => { /* Logic for scheme helper */ });
 
             function setPumpState(button) {
                 const isOn = button.textContent === 'ON';
@@ -570,13 +425,10 @@
                 allPumpToggleButtons.forEach(btn => {
                     btn.textContent = newText;
                     btn.classList.toggle('bg-green-500', !isOn);
-                    btn.classList.toggle('hover:bg-green-600', !isOn);
                     btn.classList.toggle('bg-red-500', isOn);
-                    btn.classList.toggle('hover:bg-red-600', isOn);
                 });
             }
-
-            function setPumpMode(selectedMode) {
+             function setPumpMode(selectedMode) {
                  allPumpModeButtons.forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === selectedMode);
                  });
@@ -586,40 +438,28 @@
                     btn.classList.toggle('cursor-not-allowed', selectedMode === 'auto');
                  });
             }
-
             allPumpToggleButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpState(e.target)));
             allPumpModeButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpMode(e.target.dataset.mode)));
             
-            const krishiKendras = [
-                { name: "Krishi Vigyan Kendra, SAS Nagar (Mohali)", lat: 30.6405, lng: 76.7237, address: "Sector 62, Sahibzada Ajit Singh Nagar, Punjab 160062" },
-                { name: "Punjab Agricultural University, Ludhiana", lat: 30.9010, lng: 75.8573, address: "Ferozepur Road, Ludhiana, Punjab 141004" },
-                { name: "Krishi Vigyan Kendra, Patiala", lat: 30.3398, lng: 76.3869, address: "Rauni Farm, Nabha Road, Patiala, Punjab 147001" },
-                { name: "Krishi Vigyan Kendra, Ambala", lat: 30.3782, lng: 76.7767, address: "Tepla, Ambala Cantt, Haryana 133104" }
-            ];
-            
+            // --- Krishi Kendra Logic ---
+            const kendraDetails = document.getElementById('kendra-details');
             let userCurrentLocation = null;
-
-            function getDistance(lat1, lon1, lat2, lon2) {
-                const R = 6371;
-                const dLat = (lat2 - lat1) * Math.PI / 180;
-                const dLon = (lon2 - lon1) * Math.PI / 180;
-                const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
-                return R * 2 * Math.asin(Math.sqrt(a));
-            }
-
+            const krishiKendras = [
+                { name: "Krishi Vigyan Kendra, SAS Nagar (Mohali)", lat: 30.6405, lng: 76.7237, address: "Sector 62, SAS Nagar, Punjab" },
+                { name: "Punjab Agricultural University, Ludhiana", lat: 30.9010, lng: 75.8573, address: "Ferozepur Road, Ludhiana, Punjab" },
+            ];
             function findNearestKendra(userLat, userLng) {
-                let closest = null;
-                let minDistance = Infinity;
-                krishiKendras.forEach(kendra => {
-                    const distance = getDistance(userLat, userLng, kendra.lat, kendra.lng);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closest = kendra;
-                    }
+                return krishiKendras.reduce((prev, curr) => {
+                    const prevDist = getDistance(userLat, userLng, prev.lat, prev.lng);
+                    const currDist = getDistance(userLat, userLng, curr.lat, curr.lng);
+                    return (prevDist < currDist) ? prev : curr;
                 });
-                return closest;
             }
-
+            function getDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; const dLat = (lat2-lat1) * Math.PI / 180; const dLon = (lon2-lon1) * Math.PI / 180; 
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            }
             function handleLocationAccess() {
                 const mapPlaceholder = document.getElementById('map-placeholder');
                 if (navigator.geolocation) {
@@ -628,116 +468,27 @@
                             userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                             const nearestKendra = findNearestKendra(userCurrentLocation.lat, userCurrentLocation.lng);
                             if (nearestKendra) {
-                                document.getElementById("kendra-details").classList.remove('hidden');
+                                kendraDetails.classList.remove('hidden');
                                 document.getElementById("kendra-name").textContent = nearestKendra.name;
                                 document.getElementById("kendra-address").textContent = nearestKendra.address;
                                 document.getElementById('get-directions-button').onclick = () => {
-                                    const url = `https://www.google.com/maps/dir/?api=1&origin=${userCurrentLocation.lat},${userCurrentLocation.lng}&destination=${nearestKendra.lat},${nearestKendra.lng}`;
-                                    window.open(url, '_blank');
+                                    window.open(`https://www.google.com/maps/dir/?api=1&origin=${userCurrentLocation.lat},${userCurrentLocation.lng}&destination=${nearestKendra.lat},${nearestKendra.lng}`, '_blank');
                                 };
                                 initMap(userCurrentLocation, nearestKendra);
-                            } else {
-                                mapPlaceholder.textContent = "Could not find any Krishi Kendras near you.";
-                            }
+                            } else { mapPlaceholder.textContent = "Could not find any Krishi Kendras near you."; }
                         },
-                        (error) => {
-                            console.error("Geolocation error:", error);
-                            let errorMessage = "Could not get your location. ";
-                            switch(error.code) {
-                                case error.PERMISSION_DENIED:
-                                    errorMessage += "You denied the request for Geolocation. Please enable it in your browser's site settings.";
-                                    break;
-                                case error.POSITION_UNAVAILABLE:
-                                    errorMessage += "Location information is unavailable.";
-                                    break;
-                                case error.TIMEOUT:
-                                    errorMessage += "The request to get user location timed out.";
-                                    break;
-                                default:
-                                    errorMessage += "An unknown error occurred.";
-                                    break;
-                            }
-                            mapPlaceholder.textContent = errorMessage;
-                        }
+                        (error) => { mapPlaceholder.textContent = "Location access denied. Please enable it to use this feature."; }
                     );
-                } else {
-                    mapPlaceholder.textContent = "Geolocation is not supported by your browser.";
-                }
+                } else { mapPlaceholder.textContent = "Geolocation is not supported by your browser."; }
             }
-
             function initMap(userLocation, nearestKendra) {
-                if (typeof google === 'object' && typeof google.maps === 'object') {
-                    const map = new google.maps.Map(document.getElementById("map"), { zoom: 10, center: userLocation });
-                    new google.maps.Marker({ position: userLocation, map, title: "Your Location", icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } });
-                    new google.maps.Marker({ position: nearestKendra, map, title: nearestKendra.name });
-                    const bounds = new google.maps.LatLngBounds();
-                    bounds.extend(new google.maps.LatLng(userLocation.lat, userLocation.lng));
-                    bounds.extend(new google.maps.LatLng(nearestKendra.lat, nearestKendra.lng));
-                    map.fitBounds(bounds);
-                } else {
-                     console.error("Google Maps API is not loaded.");
-                }
+                const map = new google.maps.Map(document.getElementById("map"), { zoom: 10, center: userLocation });
+                new google.maps.Marker({ position: userLocation, map, title: "Your Location" });
+                new google.maps.Marker({ position: nearestKendra, map, title: nearestKendra.name });
             }
-
-            const geminiModal = document.getElementById('gemini-modal');
-            const closeModalButton = document.getElementById('close-modal-button');
-            const modalTitle = document.getElementById('modal-title');
-            const modalSpinner = document.getElementById('modal-spinner');
-            const modalContentArea = document.getElementById('modal-content-area');
-            const geminiAPIKey = ""; // The Canvas will inject the key here
-            const geminiAPIUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiAPIKey}`;
-
-            async function callGemini(prompt) {
-                try {
-                    const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                    const response = await fetch(geminiAPIUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error(`API call failed: ${response.status}`);
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    formattedText = formattedText.replace(/\* (.*?)(<br>|$)/g, '<li class="ml-4 list-disc">$1</li>');
-                    formattedText = formattedText.replace(/\n/g, '<br>');
-                    return formattedText;
-                } catch (error) {
-                    console.error("Gemini API call failed:", error);
-                    return "Sorry, something went wrong while contacting the AI.";
-                }
-            }
-
-            function showModal(title) {
-                modalTitle.textContent = title;
-                modalContentArea.innerHTML = '';
-                modalSpinner.classList.remove('hidden');
-                geminiModal.classList.remove('hidden');
-            }
-
-            closeModalButton.addEventListener('click', () => geminiModal.classList.add('hidden'));
-
-            document.getElementById('gemini-insights-button').addEventListener('click', async () => {
-                const disease = document.getElementById('disease-name').textContent;
-                showModal(`✨ AI Insights for ${disease}`);
-                const prompt = `You are an agricultural expert. A farmer's plant has been diagnosed with ${disease}. Provide a detailed but easy-to-understand explanation covering: 1. A detailed list of common symptoms to confirm the diagnosis. 2. A simple, step-by-step organic home remedy. 3. Recommended chemical treatments for severe cases. 4. A list of preventive measures to avoid this disease in the future. Format the response clearly with headings.`;
-                const result = await callGemini(prompt);
-                modalContentArea.innerHTML = result;
-                modalSpinner.classList.add('hidden');
-            });
-
-            document.getElementById('gemini-plan-button').addEventListener('click', async () => {
-                 const soil = document.getElementById('soil-type').textContent;
-                 const crop = document.getElementById('current-crop').textContent;
-                 showModal(`✨ AI Crop Plan for ${crop}`);
-                 const prompt = `You are an expert agronomist. A farmer in Kharar, India, has ${soil} soil and is currently growing ${crop}. Generate a simple, actionable 4-week plan for them. For each week, provide tips on watering, fertilization (suggesting common organic and chemical options), pest/disease monitoring, and general plant care. Keep the language simple for a local farmer. Format it with clear weekly headings.`;
-                 const result = await callGemini(prompt);
-                 modalContentArea.innerHTML = result;
-                 modalSpinner.classList.add('hidden');
-            });
         }
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxyy-Wamh08ppaaAfJdytkLzq4zO9N8Xo&callback=initApp" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initApp" async defer></script>
 </body>
 </html>
 
