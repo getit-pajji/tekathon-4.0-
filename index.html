@@ -6,6 +6,9 @@
     <title>Krishi Rakshak</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- NEW: Libraries for Real AI Image Recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <style>
         /* A little extra polish for the UI */
         body { 
@@ -147,6 +150,11 @@
                                 <i class="fas fa-map-marker-alt text-3xl text-purple-600 mb-2"></i>
                                 <p class="font-semibold text-gray-700">Krishi Kendra</p>
                             </div>
+                             <!-- AI Helpline Button -->
+                            <a id="ai-helpline-button" href="tel:YOUR_TWILIO_PHONE_NUMBER" class="action-card col-span-2 bg-red-50 p-4 rounded-xl text-center cursor-pointer hover:bg-red-100 transition">
+                                <i class="fas fa-phone-alt text-3xl text-red-600 mb-2"></i>
+                                <p class="font-semibold text-gray-700">AI Helpline (for all farmers)</p>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -159,7 +167,7 @@
                 </div>
                 <div id="diagnose-upload">
                     <h2 class="text-xl font-semibold mb-2">Advanced Crop Analysis</h2>
-                    <p class="text-gray-600 mb-6">Upload a standard, multispectral, or hyperspectral image for analysis.</p>
+                    <p class="text-gray-600 mb-6">Upload an image for analysis. For multispectral images, please upload a pre-processed false-color composite.</p>
                     
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
@@ -175,7 +183,7 @@
                 <div id="diagnose-loading" class="hidden">
                      <div class="flex flex-col items-center justify-center pt-16">
                         <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p class="mt-4 text-gray-600">Analyzing Image...</p>
+                        <p class="mt-4 text-gray-600">Analyzing Image with AI...</p>
                     </div>
                 </div>
 
@@ -184,28 +192,12 @@
                     <img id="result-image" src="https://placehold.co/400x300/e2e8f0/cbd5e0?text=Your+Image" alt="Uploaded leaf" class="rounded-lg mb-4 w-full">
                     <div class="bg-gray-50 p-4 rounded-lg space-y-4">
                         <div>
-                            <p class="font-semibold text-gray-800">Detected Disease:</p>
-                            <p id="disease-name" class="text-lg text-red-600 font-bold">Tomato Late Blight</p>
+                            <p class="font-semibold text-gray-800">Detected Condition:</p>
+                            <p id="disease-name" class="text-lg text-red-600 font-bold"></p>
                         </div>
                         <div>
                             <p class="font-semibold text-gray-800">Confidence:</p>
-                            <p id="confidence-score" class="text-green-700">96.8%</p>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">Symptoms:</p>
-                            <ul class="list-disc list-inside text-gray-600 text-sm">
-                                <li>Dark, water-soaked spots on leaves.</li>
-                                <li>White, fuzzy mold on the underside of leaves.</li>
-                                <li>Dark, greasy-looking spots on tomato fruit.</li>
-                            </ul>
-                        </div>
-                         <div>
-                            <p class="font-semibold text-yellow-800"><i class="fas fa-seedling mr-1"></i> Homely & Organic Remedy:</p>
-                            <p id="recommendation" class="text-gray-600 text-sm">Mix 1 tablespoon of baking soda and 1 teaspoon of neem oil in 1 litre of water. Spray on the affected plants every 7 days. This helps to change the pH of the leaf surface, making it difficult for fungus to grow.</p>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-red-800"><i class="fas fa-flask mr-1"></i> Chemical Treatment:</p>
-                            <p id="chemical-recommendation" class="text-gray-600 text-sm">For severe cases, apply a copper-based fungicide. Always follow the instructions on the product label and wear safety equipment.</p>
+                            <p id="confidence-score" class="text-green-700"></p>
                         </div>
                     </div>
                      <button id="gemini-insights-button" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity">
@@ -248,13 +240,20 @@
                 <div class="flex items-center mb-6">
                     <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                 </div>
-                <h2 id="kendra-title" class="text-xl font-semibold mb-4">Finding Nearest Krishi Kendra...</h2>
-                <div id="map" class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <p class="text-gray-500 p-4 text-center">Loading map with your location...</p>
+                <h2 class="text-xl font-semibold mb-4">Nearest Krishi Kendra</h2>
+                <div id="kendra-details" class="mb-4 bg-gray-50 p-4 rounded-lg text-left hidden">
+                    <h3 id="kendra-name" class="font-bold text-lg text-gray-800"></h3>
+                    <p id="kendra-address" class="text-gray-600"></p>
+                    <button id="get-directions-button" class="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        Get Directions
+                    </button>
+                </div>
+                <div id="map" class="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <p id="map-placeholder" class="text-gray-500 p-4 text-center">Requesting your location to find the nearest center...</p>
                 </div>
             </div>
             
-            <!-- NEW Page 5: Farmer Profile -->
+            <!-- Page 5: Farmer Profile -->
             <div id="profile-page" class="page hidden">
                  <div class="flex items-center mb-6">
                     <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
@@ -312,27 +311,23 @@
                 </div>
             </div>
 
-            <!-- NEW Page 6: Marketplace -->
+            <!-- Page 6: Marketplace -->
             <div id="market-page" class="page hidden flex flex-col h-full">
                 <div class="flex items-center mb-6 flex-shrink-0">
                     <button class="back-button text-gray-600 hover:text-green-600"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">Marketplace</h2>
                 
-                <!-- Scrollable container for all market content -->
                 <div class="overflow-y-auto flex-grow pr-2">
-                    <!-- Pesticides Section -->
                     <div>
                         <h3 class="text-lg font-semibold text-gray-700 mb-4">Pesticides & Fertilizers</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Product Card -->
                             <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                                 <img src="https://placehold.co/400x300/e2e8f0/334155?text=Neem+Oil" alt="Neem Oil" class="w-full h-32 object-cover rounded-md mb-4">
                                 <h4 class="font-bold text-gray-800">Neem Oil (1L)</h4>
                                 <p class="text-gray-600 text-lg font-semibold mb-2">₹750</p>
                                 <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
                             </div>
-                            <!-- Product Card -->
                             <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                                  <img src="https://placehold.co/400x300/e2e8f0/334155?text=Urea+Bags" alt="Urea Bags" class="w-full h-32 object-cover rounded-md mb-4">
                                 <h4 class="font-bold text-gray-800">Urea Fertilizer (45kg)</h4>
@@ -341,19 +336,15 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Safety Equipment Section -->
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold text-gray-700 mb-4">Safety Equipment</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Product Card -->
                             <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                                 <img src="https://placehold.co/400x300/e2e8f0/334155?text=Gloves" alt="Gloves" class="w-full h-32 object-cover rounded-md mb-4">
                                 <h4 class="font-bold text-gray-800">Hand Gloves</h4>
                                 <p class="text-gray-600 text-lg font-semibold mb-2">₹150</p>
                                 <button class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Add to Cart</button>
                             </div>
-                            <!-- Product Card -->
                             <div class="product-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                                 <img src="https://placehold.co/400x300/e2e8f0/334155?text=Face+Mask" alt="Face Mask" class="w-full h-32 object-cover rounded-md mb-4">
                                 <h4 class="font-bold text-gray-800">Respirator Mask</h4>
@@ -364,7 +355,6 @@
                     </div>
                 </div>
             </div>
-
         </main>
 
         <!-- Bottom Navigation -->
@@ -396,22 +386,17 @@
                 <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">&times;</button>
             </div>
             <div id="modal-body" class="p-6 overflow-y-auto">
-                <!-- Spinner -->
                 <div id="modal-spinner" class="flex flex-col items-center justify-center py-10">
                     <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                     <p class="mt-4 text-gray-600">Generating response...</p>
                 </div>
-                <!-- Content -->
                 <div id="modal-content-area" class="text-gray-700 space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- App Logic MUST be loaded after the Google Maps API -->
     <script>
-        // This function will be called by the Google Maps script once it's loaded
         function initApp() {
-            // Firebase Configuration Object has been inserted below
             const firebaseConfig = {
                 apiKey: "AIzaSyB_ZgpYxTyF0B-hUH2xvpmdqwLaQUU8-ig",
                 authDomain: "krishirakshakapp.firebaseapp.com",
@@ -422,7 +407,6 @@
                 measurementId: "G-YQ9N32BF8V"
             };
 
-            // --- Page Navigation & UI Logic ---
             const pages = document.querySelectorAll('.page');
             const navItems = document.querySelectorAll('.nav-item');
             const profileButton = document.getElementById('profile-button');
@@ -434,7 +418,6 @@
                 if (targetPage) {
                     targetPage.classList.remove('hidden');
                 }
-
                 const isMainPage = ['dashboard-page', 'diagnose-page', 'irrigation-page', 'kendra-page'].includes(pageId);
                 if (isMainPage) {
                     navItems.forEach(item => {
@@ -443,29 +426,19 @@
                 } else {
                      navItems.forEach(item => item.classList.remove('active'));
                 }
-                
                 if (pageId === 'kendra-page') {
                     handleLocationAccess();
                 }
             }
 
-            navItems.forEach(item => {
-                item.addEventListener('click', () => showPage(item.dataset.page));
-            });
-
-            // Dashboard buttons
+            navItems.forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
             document.getElementById('diagnose-button').addEventListener('click', () => showPage('diagnose-page'));
             document.getElementById('irrigation-button').addEventListener('click', () => showPage('irrigation-page'));
             document.getElementById('kendra-button').addEventListener('click', () => showPage('kendra-page'));
             document.getElementById('market-prices-button').addEventListener('click', () => showPage('market-page'));
-            
             profileButton.addEventListener('click', () => showPage('profile-page'));
+            backButtons.forEach(button => button.addEventListener('click', () => showPage('dashboard-page')));
 
-            backButtons.forEach(button => {
-                button.addEventListener('click', () => showPage('dashboard-page'));
-            });
-
-            // --- Diagnose Page Logic ---
             const uploadButton = document.getElementById('upload-button');
             const fileInput = document.getElementById('leaf-image-input');
             const diagnoseUpload = document.getElementById('diagnose-upload');
@@ -475,42 +448,102 @@
             const diagnoseAgainButton = document.getElementById('diagnose-again-button');
             const scansList = document.getElementById('recent-scans-list');
             const noScansPlaceholder = document.getElementById('no-scans-placeholder');
+            const diseaseNameEl = document.getElementById('disease-name');
+            const confidenceScoreEl = document.getElementById('confidence-score');
+            
+            // --- NEW: AI Diagnosis Logic ---
+            const primaryImageApiKey = "AIzaSyCOAj-NRpl0PtRlo869u19gQkKO3cb_XNs"; // Your provided key for a primary model
+            // IMPORTANT: This is a working demo model for various plant diseases.
+            // For your final project, you should train your own model on Teachable Machine and replace this URL.
+            const secondaryModelURL = "https://teachablemachine.withgoogle.com/models/D5g-632k7/";
+            let model; // To hold the loaded Teachable Machine model
+
+            async function loadSecondaryModel() {
+                if (model) return model; // Don't load if it's already loaded
+                try {
+                    const modelURL = secondaryModelURL + "model.json";
+                    const metadataURL = secondaryModelURL + "metadata.json";
+                    model = await tmImage.load(modelURL, metadataURL);
+                    console.log("Secondary AI model loaded successfully!");
+                    return model;
+                } catch (error) {
+                    console.error("Failed to load secondary model:", error);
+                    return null;
+                }
+            }
+            loadSecondaryModel(); // Pre-load the model when the app starts
 
             uploadButton.addEventListener('click', () => fileInput.click());
 
             fileInput.addEventListener('change', (event) => {
                 if (event.target.files && event.target.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = function(e) { 
+                    reader.onload = async function(e) { 
                         resultImage.src = e.target.result; 
-                        
                         diagnoseUpload.classList.add('hidden');
                         diagnoseLoading.classList.remove('hidden');
+                        diagnoseResult.classList.add('hidden');
 
-                        setTimeout(() => {
+                        // --- REAL AI DIAGNOSIS LOGIC ---
+                        console.log("Attempting diagnosis with Primary AI (simulated)...");
+                        // In a real app, you would call your primary API here using `primaryImageApiKey`.
+                        // For this demo, we'll assume it's for hyperspectral and fallback to our working secondary model.
+
+                        console.log("Falling back to Secondary AI for standard image...");
+                        const loadedModel = await loadSecondaryModel();
+                        if (!loadedModel) {
+                            diseaseNameEl.textContent = "Error: AI Model could not be loaded. Please check the model URL.";
+                            confidenceScoreEl.textContent = "N/A";
                             diagnoseLoading.classList.add('hidden');
                             diagnoseResult.classList.remove('hidden');
+                            return;
+                        }
+
+                        try {
+                            const prediction = await loadedModel.predict(resultImage);
+                            let highestPrediction = { className: "Unknown", probability: 0 };
+                            prediction.forEach(p => {
+                                if (p.probability > highestPrediction.probability) {
+                                    highestPrediction = p;
+                                }
+                            });
                             
-                            // Add the new scan to the profile page
-                            addScanToProfile(e.target.result);
-                        }, 2000);
+                            const formattedClassName = highestPrediction.className.replace(/_/g, " ");
+                            const formattedConfidence = (highestPrediction.probability * 100).toFixed(1) + "%";
+                            
+                            diseaseNameEl.textContent = formattedClassName;
+                            confidenceScoreEl.textContent = formattedConfidence;
+                            
+                            if (formattedClassName.toLowerCase().includes('healthy')) {
+                                diseaseNameEl.classList.remove('text-red-600');
+                                diseaseNameEl.classList.add('text-green-700');
+                            } else {
+                                diseaseNameEl.classList.add('text-red-600');
+                                diseaseNameEl.classList.remove('text-green-700');
+                            }
+                            
+                            addScanToProfile(e.target.result, formattedClassName, formattedConfidence);
+
+                        } catch (error) {
+                            console.error("Error during model prediction:", error);
+                            diseaseNameEl.textContent = "Error during analysis";
+                            confidenceScoreEl.textContent = "N/A";
+                        } finally {
+                            diagnoseLoading.classList.add('hidden');
+                            diagnoseResult.classList.remove('hidden');
+                        }
                     }
                     reader.readAsDataURL(event.target.files[0]);
                 }
             });
             
-            function addScanToProfile(imageSrc) {
+            function addScanToProfile(imageSrc, disease, confidence) {
                 if(noScansPlaceholder) {
-                    noScansPlaceholder.remove();
+                    noScansPlaceholder.style.display = 'none';
                 }
-
-                const disease = document.getElementById('disease-name').textContent;
-                const confidence = document.getElementById('confidence-score').textContent;
                 const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                
-                const isHealthy = disease.toLowerCase() === 'healthy';
+                const isHealthy = disease.toLowerCase().includes('healthy');
                 const colorClass = isHealthy ? 'text-green-700' : 'text-red-600';
-
                 const newScanHTML = `
                     <div class="flex items-center bg-gray-50 p-3 rounded-lg">
                         <img src="${imageSrc}" class="w-14 h-14 object-cover rounded-md mr-4">
@@ -519,8 +552,7 @@
                             <p class="text-sm text-gray-500">${date} - ${confidence} Confidence</p>
                         </div>
                     </div>`;
-
-                scansList.insertAdjacentHTML('afterbegin', newScanHTML); // 'afterbegin' adds it to the top
+                scansList.insertAdjacentHTML('afterbegin', newScanHTML);
             }
 
             diagnoseAgainButton.addEventListener('click', () => {
@@ -529,7 +561,6 @@
                 fileInput.value = '';
             });
 
-            // --- Irrigation Pump Logic ---
             const allPumpToggleButtons = document.querySelectorAll('[id^="pump-toggle"]');
             const allPumpModeButtons = document.querySelectorAll('.pump-mode-btn');
 
@@ -559,13 +590,14 @@
             allPumpToggleButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpState(e.target)));
             allPumpModeButtons.forEach(btn => btn.addEventListener('click', (e) => setPumpMode(e.target.dataset.mode)));
             
-            // --- Location and Map Logic ---
             const krishiKendras = [
-                { name: "Krishi Vigyan Kendra, SAS Nagar (Mohali)", lat: 30.6405, lng: 76.7237 },
-                { name: "Punjab Agricultural University, Ludhiana", lat: 30.9010, lng: 75.8573 },
-                { name: "Krishi Vigyan Kendra, Patiala", lat: 30.3398, lng: 76.3869 },
-                { name: "Krishi Vigyan Kendra, Ambala", lat: 30.3782, lng: 76.7767 }
+                { name: "Krishi Vigyan Kendra, SAS Nagar (Mohali)", lat: 30.6405, lng: 76.7237, address: "Sector 62, Sahibzada Ajit Singh Nagar, Punjab 160062" },
+                { name: "Punjab Agricultural University, Ludhiana", lat: 30.9010, lng: 75.8573, address: "Ferozepur Road, Ludhiana, Punjab 141004" },
+                { name: "Krishi Vigyan Kendra, Patiala", lat: 30.3398, lng: 76.3869, address: "Rauni Farm, Nabha Road, Patiala, Punjab 147001" },
+                { name: "Krishi Vigyan Kendra, Ambala", lat: 30.3782, lng: 76.7767, address: "Tepla, Ambala Cantt, Haryana 133104" }
             ];
+            
+            let userCurrentLocation = null;
 
             function getDistance(lat1, lon1, lat2, lon2) {
                 const R = 6371;
@@ -589,21 +621,54 @@
             }
 
             function handleLocationAccess() {
-                const userLocation = { lat: 30.7456, lng: 76.6521 }; // Coordinates for Kharar
-                const nearestKendra = findNearestKendra(userLocation.lat, userLocation.lng);
-                
-                if (nearestKendra) {
-                    document.getElementById("kendra-title").textContent = `Nearest to Kharar: ${nearestKendra.name}`;
-                    initMap(userLocation, nearestKendra);
+                const mapPlaceholder = document.getElementById('map-placeholder');
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                            const nearestKendra = findNearestKendra(userCurrentLocation.lat, userCurrentLocation.lng);
+                            if (nearestKendra) {
+                                document.getElementById("kendra-details").classList.remove('hidden');
+                                document.getElementById("kendra-name").textContent = nearestKendra.name;
+                                document.getElementById("kendra-address").textContent = nearestKendra.address;
+                                document.getElementById('get-directions-button').onclick = () => {
+                                    const url = `https://www.google.com/maps/dir/?api=1&origin=${userCurrentLocation.lat},${userCurrentLocation.lng}&destination=${nearestKendra.lat},${nearestKendra.lng}`;
+                                    window.open(url, '_blank');
+                                };
+                                initMap(userCurrentLocation, nearestKendra);
+                            } else {
+                                mapPlaceholder.textContent = "Could not find any Krishi Kendras near you.";
+                            }
+                        },
+                        (error) => {
+                            console.error("Geolocation error:", error);
+                            let errorMessage = "Could not get your location. ";
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += "You denied the request for Geolocation. Please enable it in your browser's site settings.";
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += "Location information is unavailable.";
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage += "The request to get user location timed out.";
+                                    break;
+                                default:
+                                    errorMessage += "An unknown error occurred.";
+                                    break;
+                            }
+                            mapPlaceholder.textContent = errorMessage;
+                        }
+                    );
                 } else {
-                    document.getElementById("map").innerHTML = '<p class="text-gray-500">Could not find any Krishi Kendras.</p>';
+                    mapPlaceholder.textContent = "Geolocation is not supported by your browser.";
                 }
             }
 
             function initMap(userLocation, nearestKendra) {
                 if (typeof google === 'object' && typeof google.maps === 'object') {
                     const map = new google.maps.Map(document.getElementById("map"), { zoom: 10, center: userLocation });
-                    new google.maps.Marker({ position: userLocation, map, title: "Your Location (Kharar)", icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } });
+                    new google.maps.Marker({ position: userLocation, map, title: "Your Location", icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } });
                     new google.maps.Marker({ position: nearestKendra, map, title: nearestKendra.name });
                     const bounds = new google.maps.LatLngBounds();
                     bounds.extend(new google.maps.LatLng(userLocation.lat, userLocation.lng));
@@ -614,39 +679,32 @@
                 }
             }
 
-            // --- Gemini API Integration ---
             const geminiModal = document.getElementById('gemini-modal');
             const closeModalButton = document.getElementById('close-modal-button');
             const modalTitle = document.getElementById('modal-title');
             const modalSpinner = document.getElementById('modal-spinner');
             const modalContentArea = document.getElementById('modal-content-area');
-
             const geminiAPIKey = ""; // The Canvas will inject the key here
             const geminiAPIUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiAPIKey}`;
 
             async function callGemini(prompt) {
                 try {
-                    const payload = {
-                        contents: [{ parts: [{ text: prompt }] }]
-                    };
+                    const payload = { contents: [{ parts: [{ text: prompt }] }] };
                     const response = await fetch(geminiAPIUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    if (!response.ok) {
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`API call failed: ${response.status}`);
                     const result = await response.json();
                     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    // Improved formatting for lists and headings
-                    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
-                    formattedText = formattedText.replace(/\* (.*?)(<br>|$)/g, '<li class="ml-4 list-disc">$1</li>'); // List items
+                    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    formattedText = formattedText.replace(/\* (.*?)(<br>|$)/g, '<li class="ml-4 list-disc">$1</li>');
                     formattedText = formattedText.replace(/\n/g, '<br>');
                     return formattedText;
                 } catch (error) {
                     console.error("Gemini API call failed:", error);
-                    return "Sorry, something went wrong while contacting the AI. Please try again later.";
+                    return "Sorry, something went wrong while contacting the AI.";
                 }
             }
 
@@ -659,7 +717,6 @@
 
             closeModalButton.addEventListener('click', () => geminiModal.classList.add('hidden'));
 
-            // Deeper Insights Button Logic
             document.getElementById('gemini-insights-button').addEventListener('click', async () => {
                 const disease = document.getElementById('disease-name').textContent;
                 showModal(`✨ AI Insights for ${disease}`);
@@ -669,7 +726,6 @@
                 modalSpinner.classList.add('hidden');
             });
 
-            // Crop Plan Button Logic
             document.getElementById('gemini-plan-button').addEventListener('click', async () => {
                  const soil = document.getElementById('soil-type').textContent;
                  const crop = document.getElementById('current-crop').textContent;
@@ -681,7 +737,6 @@
             });
         }
     </script>
-    <!-- Google Maps API Key has been inserted below, with the new callback parameter -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxyy-Wamh08ppaaAfJdytkLzq4zO9N8Xo&callback=initApp" async defer></script>
 </body>
 </html>
