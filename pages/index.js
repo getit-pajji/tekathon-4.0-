@@ -7,12 +7,11 @@ export default function Home({ htmlContent }) {
 }
 
 export async function getServerSideProps() {
-  const filePath = path.join(process.cwd(), 'public', 'index.html');
-  const htmlContent = await fs.readFile(filePath, 'utf8');
-
-  return {
-    props: {
-      htmlContent,
-    },
-  };
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'index.html');
+    const htmlContent = await fs.readFile(filePath, 'utf8');
+    return { props: { htmlContent } };
+  } catch (err) {
+    return { notFound: true };
+  }
 }
